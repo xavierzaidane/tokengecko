@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AuthGuard } from '@/components/auth/auth-guard';
-import { Navbar } from '@/components/layout/navbar';
+import { SidebarLayout } from '@/components/layout/sidebar-layout';
 import { PromptInput } from '@/components/inspector/prompt-input';
 import { ModelSelector } from '@/components/inspector/model-selector';
 import { OutputConfig } from '@/components/inspector/output-config';
@@ -16,7 +16,8 @@ import {
   inspectPromptForAllModels,
 } from '@/lib/tokenizers/engine';
 import { insforge } from '@/lib/insforge/client';
-import { Sparkles, BarChart2, Table } from 'lucide-react';
+import { Sparkles, BarChart2, Table as TableIcon } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 const INITIAL_PROMPT = `You are an expert AI software architect and senior full-stack engineer. Your task is to analyze user requests, produce robust system designs, evaluate performance trade-offs across cloud and edge providers, write clean, type-safe TypeScript code, and ensure all security and scalability best practices are met. Always prefer modular, scalable patterns.`;
 
@@ -29,7 +30,7 @@ function InspectorContent() {
   const [promptText, setPromptText] = useState(INITIAL_PROMPT);
   const [selectedModelIds, setSelectedModelIds] = useState<string[]>(DEFAULT_SELECTION);
   const [estimatedOutputTokens, setEstimatedOutputTokens] = useState<number>(512);
-  const [activeTab, setActiveTab] = useState<'matrix' | 'chart'>('matrix');
+  const [activeTab, setActiveTab] = useState<string>('matrix');
 
   useEffect(() => {
     async function loadReloadData() {
@@ -73,52 +74,24 @@ function InspectorContent() {
   }, [promptText, selectedModels, estimatedOutputTokens]);
 
   return (
-    <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8 space-y-6">
-      {/* Workspace Title Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800/80">
+    <div className="w-full space-y-6">
+      {/* Header Banner matching Storeframe Console/Hyva Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/80">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono mb-2">
-            <Sparkles className="w-3 h-3" />
-            Live Analysis Mode
-          </div>
           <h1 className="text-2xl md:text-3xl font-extrabold font-mono text-white tracking-tight">
             Prompt Inspector Workspace
           </h1>
+          <p className="text-xs text-zinc-400 font-mono mt-1">
+            Compare token counts, pricing, and context limits for GPT-5, Claude, Gemini, and DeepSeek.
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Share & Save Actions */}
           <ShareModal promptText={promptText} results={inspectionResults} stats={stats} />
-
-          {/* View Switcher Tabs */}
-          <div className="flex items-center gap-1 bg-[#0F172A] border border-slate-800 rounded-xl p-1">
-            <button
-              onClick={() => setActiveTab('matrix')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition ${
-                activeTab === 'matrix'
-                  ? 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-bold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Table className="w-3.5 h-3.5" />
-              Comparison Matrix
-            </button>
-            <button
-              onClick={() => setActiveTab('chart')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition ${
-                activeTab === 'chart'
-                  ? 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-bold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <BarChart2 className="w-3.5 h-3.5" />
-              Context Chart
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* Top Section: Prompt Input */}
+      {/* Top Section: Prompt Input Payload */}
       <PromptInput promptText={promptText} onChange={setPromptText} stats={stats} />
 
       {/* Middle Section: Target Model Selector & Output Configuration */}
@@ -137,25 +110,39 @@ function InspectorContent() {
         </div>
       </div>
 
-      {/* Results Section: Matrix or Visualization */}
-      {activeTab === 'matrix' ? (
-        <ComparisonMatrix results={inspectionResults} />
-      ) : (
-        <ContextChart results={inspectionResults} />
-      )}
-    </main>
+      {/* Results View Switcher using Shadcn Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="matrix" icon={<TableIcon className="w-3.5 h-3.5" />}>
+              Comparison Matrix
+            </TabsTrigger>
+            <TabsTrigger value="chart" icon={<BarChart2 className="w-3.5 h-3.5" />}>
+              Context Visualization
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="matrix">
+          <ComparisonMatrix results={inspectionResults} />
+        </TabsContent>
+
+        <TabsContent value="chart">
+          <ContextChart results={inspectionResults} />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
 
 export default function InspectorPage() {
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-[#0B0F17] text-slate-100 flex flex-col">
-        <Navbar />
-        <Suspense fallback={<div className="p-8 text-center text-slate-500 font-mono text-sm">Loading workspace...</div>}>
+      <SidebarLayout>
+        <Suspense fallback={<div className="p-8 text-center text-zinc-500 font-mono text-sm">Loading workspace...</div>}>
           <InspectorContent />
         </Suspense>
-      </div>
+      </SidebarLayout>
     </AuthGuard>
   );
 }

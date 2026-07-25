@@ -26,6 +26,7 @@ interface AuthContextType {
   signInWithPassword: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, name?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  logout: () => Promise<void>;
   signInWithOAuth: (provider: 'google' | 'github') => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -101,6 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signInWithPassword,
         signUp,
         signOut,
+        logout: signOut,
         signInWithOAuth,
         refreshUser: fetchCurrentUser,
       }}

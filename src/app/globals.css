@@ -4,96 +4,85 @@
 
 @layer base {
   :root {
-    --background: 222 47% 7%;
-    --foreground: 210 40% 98%;
+    --bg-app: #161616;
+    --bg-sidebar: #121212;
+    --bg-card: #121212;
+    --bg-input: #0d0d0d;
+    --bg-header: #0a0a0d;
+    --border-theme: #27272a;
+    --accent-orange: #ba7545;
 
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 160 84% 39%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 217 32% 17%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 32% 15%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217 32% 17%;
-    --accent-foreground: 210 40% 98%;
-
+    --background: 222 25% 7%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 6.5%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 6.5%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 24 95% 53%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 240 5.9% 10%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 24 95% 53%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217 32% 18%;
-    --input: 217 32% 18%;
-    --ring: 160 84% 39%;
-
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 24 95% 53%;
     --radius: 0.75rem;
-
-    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  }
-
-  .dark {
-    --background: 222 47% 7%;
-    --foreground: 210 40% 98%;
-
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 160 84% 39%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 217 32% 17%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 32% 15%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217 32% 17%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217 32% 18%;
-    --input: 217 32% 18%;
-    --ring: 160 84% 39%;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
+@layer utilities {
+  .bg-app {
+    background-color: var(--bg-app);
   }
-
-  body {
-    @apply bg-background text-foreground font-sans antialiased min-h-screen selection:bg-emerald-500/20 selection:text-emerald-300;
+  .bg-sidebar {
+    background-color: var(--bg-sidebar);
+  }
+  .bg-card-dark {
+    background-color: var(--bg-card);
+  }
+  .bg-input-dark {
+    background-color: var(--bg-input);
+  }
+  .bg-header-dark {
+    background-color: var(--bg-header);
+  }
+  .bg-accent-orange {
+    background-color: var(--accent-orange);
+  }
+  .text-accent-orange {
+    color: var(--accent-orange);
+  }
+  .border-accent-orange {
+    border-color: var(--accent-orange);
+  }
+  .accent-orange {
+    accent-color: var(--accent-orange);
   }
 }
 
-/* Custom Scrollbars */
+body {
+  background-color: var(--bg-app);
+  color: #f4f4f5;
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--bg-input);
 }
-
 ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.6);
-  border-radius: 9999px;
+  background: var(--border-theme);
+  border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(71, 85, 105, 0.8);
+  background: var(--accent-orange);
 }

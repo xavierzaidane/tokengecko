@@ -1,111 +1,179 @@
 'use client';
 
-import React from 'react';
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Cell,
-  CartesianGrid,
-} from 'recharts';
+import React, { useState } from 'react';
 import { ModelInspectionResult } from '@/lib/analysis/schema';
-import { BarChart3 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell } from 'recharts';
+import { BarChart2, Cpu, Sparkles, Hash } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import {
+  ChartContainer,
+  ChartTooltip,
+  type ChartConfig,
+} from '@/components/ui/chart';
+import { Button } from '@/components/ui/button';
 
 interface ContextChartProps {
   results: ModelInspectionResult[];
 }
 
-export function ContextChart({ results }: ContextChartProps) {
-  const data = results.map((item) => ({
-    name: item.model,
-    provider: item.provider,
-    usagePercent: item.contextUsagePercent,
-    inputTokens: item.inputTokens,
-    contextWindow: item.contextWindow,
-    totalCost: item.estimatedCost.total,
-  }));
+const chartConfig = {
+  value: {
+    label: 'Metric Value',
+    color: '#ba7545',
+  },
+} satisfies ChartConfig;
 
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const info = payload[0].payload;
-      return (
-        <div className="bg-[#0F172A] border border-slate-700 p-3 rounded-xl shadow-xl font-mono text-xs text-slate-100 flex flex-col gap-1">
-          <div className="font-bold text-white flex items-center gap-1.5">
-            {info.name}
-            <span className="text-[10px] px-1 py-0.2 rounded bg-slate-800 text-slate-400">
-              {info.provider}
-            </span>
-          </div>
-          <div className="text-emerald-400 font-semibold">
-            Context Used: {info.usagePercent}%
-          </div>
-          <div className="text-slate-400 text-[11px]">
-            {info.inputTokens.toLocaleString()} / {info.contextWindow.toLocaleString()} tokens
-          </div>
-          <div className="text-cyan-400 text-[11px] border-t border-slate-800 pt-1 mt-1">
-            Est. Total Cost: ${info.totalCost.toFixed(5)}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
+export function ContextChart({ results }: ContextChartProps) {
+  const [metricMode, setMetricMode] = useState<'percent' | 'tokens'>('percent');
+
+  const rawPercents = results.map((r) => Number(r.contextUsagePercent));
+  const maxPercent = Math.max(...rawPercents, 0.01);
+  const yMaxPercent = Math.min(100, Math.max(0.1, Number((maxPercent * 1.25).toFixed(2))));
+
+  const rawTokens = results.map((r) => r.inputTokens);
+  const maxTokens = Math.max(...rawTokens, 100);
+  const yMaxTokens = Math.ceil(maxTokens * 1.2);
+
+  const chartData = results.map((r) => {
+    const percent = Number(r.contextUsagePercent);
+    return {
+      name: r.model,
+      provider: r.provider,
+      usagePercent: percent,
+      inputTokens: r.inputTokens,
+      contextWindow: r.contextWindow,
+      totalCost: r.estimatedCost.total,
+      estimationMethod: r.estimationMethod,
+      value: metricMode === 'percent' ? percent : r.inputTokens,
+    };
+  });
 
   return (
-    <div className="bg-[#0F172A]/70 border border-slate-800 rounded-2xl p-5 backdrop-blur-md shadow-xl flex flex-col gap-4">
-      <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+    <Card className="border-zinc-800 bg-card-dark shadow-xl w-full">
+      <CardHeader className="p-4 border-b border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-emerald-400" />
-          <h2 className="text-sm font-bold font-mono text-white">Context Window Utilization Chart</h2>
+          <BarChart2 className="w-4 h-4 text-accent-orange" />
+          <div>
+            <CardTitle>Context Utilization & Relative Consumption</CardTitle>
+            <p className="text-[11px] font-mono text-zinc-400 mt-0.5">
+              {metricMode === 'percent'
+                ? `Dynamic auto-scaled relative percentage (Max scale: ${yMaxPercent}%)`
+                : 'Direct input token comparison across selected models'}
+            </p>
+          </div>
         </div>
-        <span className="text-xs text-slate-500 font-mono">% of total context consumed</span>
-      </div>
 
-      <div className="h-64 w-full pt-2">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 25 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" vertical={false} />
+        {/* View Mode Toggle */}
+        <div className="flex items-center gap-1 font-mono text-xs bg-input-dark p-1 border border-zinc-800">
+          <button
+            onClick={() => setMetricMode('percent')}
+            className={`flex items-center gap-1 px-2.5 py-1 text-xs transition ${
+              metricMode === 'percent'
+                ? 'bg-accent-orange text-zinc-950 font-bold'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-3 h-3" />
+            <span>Dynamic % Scale</span>
+          </button>
+          <button
+            onClick={() => setMetricMode('tokens')}
+            className={`flex items-center gap-1 px-2.5 py-1 text-xs transition ${
+              metricMode === 'tokens'
+                ? 'bg-accent-orange text-zinc-950 font-bold'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Hash className="w-3 h-3" />
+            <span>Tokens Count</span>
+          </button>
+        </div>
+      </CardHeader>
+
+      <CardContent className="p-4 sm:p-6 font-mono">
+        <ChartContainer config={chartConfig} className="h-80 w-full">
+          <BarChart
+            data={chartData}
+            margin={{ top: 20, right: 30, left: 15, bottom: 25 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#27272A" vertical={false} />
             <XAxis
               dataKey="name"
-              stroke="#64748B"
+              stroke="#A1A1AA"
               fontSize={11}
-              fontFamily="monospace"
               tickLine={false}
-              axisLine={{ stroke: '#334155' }}
-              interval={0}
-              angle={-20}
-              textAnchor="end"
+              axisLine={{ stroke: '#3F3F46' }}
             />
             <YAxis
-              stroke="#64748B"
+              stroke="#A1A1AA"
               fontSize={11}
-              fontFamily="monospace"
-              domain={[0, (dataMax: number) => Math.max(10, Math.ceil(dataMax * 1.2))]}
-              unit="%"
               tickLine={false}
-              axisLine={{ stroke: '#334155' }}
+              axisLine={{ stroke: '#3F3F46' }}
+              domain={[0, metricMode === 'percent' ? yMaxPercent : yMaxTokens]}
+              tickFormatter={(val) =>
+                metricMode === 'percent'
+                  ? `${val < 1 ? val.toFixed(2) : val.toFixed(0)}%`
+                  : val >= 1000
+                  ? `${(val / 1000).toFixed(1)}k`
+                  : `${val}`
+              }
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(30, 41, 59, 0.5)' }} />
-            <Bar dataKey="usagePercent" radius={[6, 6, 0, 0]}>
-              {data.map((entry, index) => (
+            <ChartTooltip
+              cursor={{ fill: 'rgba(255, 255, 255, 0.04)' }}
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const data = payload[0].payload;
+                  return (
+                    <div className="bg-card-dark border border-zinc-800 p-3.5 shadow-2xl rounded-md font-mono text-xs space-y-2 z-50 min-w-[210px]">
+                      <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2">
+                        <div className="flex items-center gap-1.5 font-bold text-white text-sm">
+                          <Cpu className="w-3.5 h-3.5 text-accent-orange" />
+                          {data.name}
+                        </div>
+                        <span className="text-[10px] text-zinc-400 px-1.5 py-0.5 bg-zinc-800 rounded">
+                          {data.provider}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-zinc-400">Context Used:</span>
+                          <span className="text-accent-orange font-bold">{data.usagePercent}%</span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-zinc-400">Tokens Payload:</span>
+                          <span className="text-zinc-200">{data.inputTokens.toLocaleString()} tok</span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="text-zinc-400">Context Limit:</span>
+                          <span className="text-zinc-300">{(data.contextWindow / 1000).toFixed(0)}k max</span>
+                        </div>
+
+                        <div className="flex items-center justify-between border-t border-zinc-800/60 pt-1.5 mt-1">
+                          <span className="text-zinc-400">Est. Total Cost:</span>
+                          <span className="text-accent-orange font-bold">${data.totalCost.toFixed(5)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              }}
+            />
+            <Bar dataKey="value" minPointSize={6} radius={[4, 4, 0, 0]}>
+              {chartData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={
-                    entry.usagePercent > 80
-                      ? '#EF4444'
-                      : entry.usagePercent > 40
-                      ? '#F59E0B'
-                      : '#10B981'
-                  }
+                  fill={entry.usagePercent > 50 ? '#EF4444' : '#ba7545'}
+                  className="transition-opacity duration-200 hover:opacity-85 cursor-pointer"
                 />
               ))}
             </Bar>
           </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
+        </ChartContainer>
+      </CardContent>
+    </Card>
   );
 }

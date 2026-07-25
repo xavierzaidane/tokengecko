@@ -1,102 +1,96 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/components/providers/auth-provider';
-import { LogOut, Sliders, History, Sparkles, Key } from 'lucide-react';
+import { Terminal, History, Key, LogOut, Code2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export function Navbar() {
-  const { user, signOut } = useAuth();
   const pathname = usePathname();
-  const router = useRouter();
-
-  const navItems = [
-    { name: 'Inspector', href: '/inspector', icon: Sparkles },
-    { name: 'History', href: '/history', icon: History },
-    { name: 'BYOK Keys', href: '/settings', icon: Key },
-  ];
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/login');
-  };
+  const { user, logout } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0B0F17]/90 backdrop-blur-md border-b border-slate-800/80 px-4 lg:px-8 py-3">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Brand */}
-        <Link href={user ? '/inspector' : '/'} className="flex items-center gap-3 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-mono font-bold text-base shadow-sm group-hover:border-emerald-400/50 transition">
-            TG
+    <header className="border-b border-zinc-800/80 bg-header-dark/90 backdrop-blur-md sticky top-0 z-40">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+        {/* Brand Logo */}
+        <Link href="/inspector" className="flex items-center gap-2.5 group">
+          <div className="w-8 h-8 bg-accent-orange flex items-center justify-center text-zinc-950 font-bold font-mono shadow-md shadow-accent-orange/20">
+            <Code2 className="w-5 h-5" />
           </div>
-          <div className="flex flex-col">
-            <span className="text-base font-bold font-mono text-white tracking-tight leading-none group-hover:text-emerald-400 transition">
-              TokenGecko
+          <div>
+            <span className="font-mono text-sm font-black tracking-wider text-white uppercase">
+              TOKEN<span className="text-accent-orange">GECKO</span>
             </span>
-            <span className="text-[10px] font-mono text-slate-500 leading-tight">
+            <span className="hidden sm:inline-block ml-2 px-1.5 py-0.5 bg-zinc-800 text-zinc-400 font-mono text-[10px]">
               Prompt Inspector
             </span>
           </div>
         </Link>
 
-        {/* Nav Links (If Logged In) */}
-        {user && (
-          <nav className="hidden md:flex items-center gap-1 bg-[#0F172A] border border-slate-800 rounded-xl p-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-mono transition ${
-                    isActive
-                      ? 'bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/20'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </nav>
-        )}
+        {/* Navigation Links */}
+        <nav className="flex items-center gap-1 sm:gap-2">
+          <Link
+            href="/inspector"
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono transition ${
+              pathname === '/inspector'
+                ? 'bg-zinc-800 text-white font-bold border border-zinc-700'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/40'
+            }`}
+          >
+            <Terminal className="w-3.5 h-3.5 text-accent-orange" />
+            <span>Inspector</span>
+          </Link>
 
-        {/* User Info / Auth Controls */}
+          <Link
+            href="/history"
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono transition ${
+              pathname === '/history'
+                ? 'bg-zinc-800 text-white font-bold border border-zinc-700'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/40'
+            }`}
+          >
+            <History className="w-3.5 h-3.5 text-accent-orange" />
+            <span>History</span>
+          </Link>
+
+          <Link
+            href="/settings"
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono transition ${
+              pathname === '/settings'
+                ? 'bg-zinc-800 text-white font-bold border border-zinc-700'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/40'
+            }`}
+          >
+            <Key className="w-3.5 h-3.5 text-accent-orange" />
+            <span>BYOK Keys</span>
+          </Link>
+        </nav>
+
+        {/* User Auth Section */}
         <div className="flex items-center gap-3">
           {user ? (
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex flex-col text-right">
-                <span className="text-xs font-mono text-slate-200">
-                  {user.profile?.name || user.email.split('@')[0]}
-                </span>
-                <span className="text-[10px] font-mono text-slate-500">{user.email}</span>
-              </div>
-              <button
-                onClick={handleSignOut}
-                title="Sign Out"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 text-xs font-mono transition"
+            <div className="flex items-center gap-2">
+              <span className="hidden sm:inline-block text-xs font-mono text-zinc-300">
+                {user.email?.split('@')[0]}
+              </span>
+              <Button
+                onClick={logout}
+                variant="ghost"
+                size="sm"
+                className="text-zinc-400 hover:text-red-400 text-xs gap-1"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Logout</span>
-              </button>
+              </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
-              <Link
-                href="/login"
-                className="px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-xs font-mono transition"
-              >
-                Log In
-              </Link>
-              <Link
-                href="/signup"
-                className="px-4 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs transition shadow-md shadow-emerald-500/10"
-              >
-                Sign Up
-              </Link>
-            </div>
+            <Link href="/login">
+              <Button variant="default" size="sm">
+                Sign In
+              </Button>
+            </Link>
           )}
         </div>
       </div>

@@ -2,10 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { AuthGuard } from '@/components/auth/auth-guard';
-import { Navbar } from '@/components/layout/navbar';
+import { SidebarLayout } from '@/components/layout/sidebar-layout';
 import { useAuth } from '@/components/providers/auth-provider';
 import { UserKeyStatus, getUserApiKeys, saveUserApiKey, deleteUserApiKey } from '@/lib/insforge/keys';
-import { Key, ShieldCheck, Lock, Trash2, RefreshCw, Check, Eye, EyeOff, Sparkles, AlertCircle } from 'lucide-react';
+import { Key, ShieldCheck, Lock, Trash2, RefreshCw, Check, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -13,7 +17,6 @@ export default function SettingsPage() {
   const [keys, setKeys] = useState<UserKeyStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Form states
   const [geminiInput, setGeminiInput] = useState('');
   const [anthropicInput, setAnthropicInput] = useState('');
 
@@ -87,32 +90,26 @@ export default function SettingsPage() {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-[#0B0F17] text-slate-100 flex flex-col">
-        <Navbar />
-
-        <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-8 space-y-6">
+      <SidebarLayout>
+        <div className="space-y-6 max-w-4xl">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800/80">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/80">
             <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono mb-2">
-                <ShieldCheck className="w-3 h-3" />
-                BYOK Encrypted Storage
-              </div>
               <h1 className="text-2xl md:text-3xl font-extrabold font-mono text-white tracking-tight">
                 API Keys & Provider Settings
               </h1>
-              <p className="text-xs text-slate-400 font-mono mt-1">
+              <p className="text-xs text-zinc-400 font-mono mt-1">
                 Bring Your Own Keys for Google Gemini and Anthropic to enable exact countTokens API calculations.
               </p>
             </div>
           </div>
 
-          {/* Encryption & Security Infobox */}
-          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-start gap-3">
-            <Lock className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+          {/* Encryption Info Alert */}
+          <div className="p-4  flex items-start gap-3 shadow-lg">
+            <Lock className="w-5 h-5 text-accent-orange shrink-0 mt-0.5" />
             <div className="text-xs font-mono space-y-1">
               <h3 className="font-bold text-white">AES-256-GCM Server-Side Encryption</h3>
-              <p className="text-slate-400 leading-relaxed font-sans text-xs">
+              <p className="text-zinc-400 leading-relaxed font-sans text-xs">
                 Your API keys are encrypted at rest using AES-256-GCM before storage. Plaintext keys are never returned to the browser client or logged after save. Keys are used strictly for provider token counting calls.
               </p>
             </div>
@@ -120,7 +117,7 @@ export default function SettingsPage() {
 
           {feedbackMsg && (
             <div
-              className={`p-4 rounded-xl font-mono text-xs flex items-center gap-2 border ${
+              className={`p-4 font-mono text-xs flex items-center gap-2 border ${
                 feedbackMsg.type === 'success'
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
                   : 'bg-red-500/10 border-red-500/30 text-red-400'
@@ -131,166 +128,164 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* Key Management Form Grid */}
-          <div className="space-y-6">
+          {/* Key Management Form Cards */}
+          <div className="space-y-6 font-mono">
             {/* 1. Google Gemini Key Card */}
-            <div className="p-6 rounded-2xl bg-[#0F172A]/70 border border-slate-800 backdrop-blur-md space-y-4 shadow-xl">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <Card className="border-zinc-800 bg-card-dark shadow-xl">
+              <CardHeader className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800/80">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 font-mono font-bold text-sm">
+                  <div className="w-9 h-9 bg-accent-orange/10 border border-zinc-800 flex items-center justify-center text-accent-orange font-bold text-sm">
                     G
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold font-mono text-white">Google Gemini API Key</h3>
-                    <p className="text-[11px] text-slate-400 font-sans">
+                    <CardTitle>Google Gemini API Key</CardTitle>
+                    <p className="text-[11px] text-zinc-400 font-sans">
                       Enables exact Gemini `countTokens()` API calculation
                     </p>
                   </div>
                 </div>
 
                 {geminiStatus?.isConfigured ? (
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-xs flex items-center gap-1.5 font-semibold">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    Configured ({geminiStatus.maskedKey})
-                  </span>
+                  <Badge variant="success">Configured ({geminiStatus.maskedKey})</Badge>
                 ) : (
-                  <span className="px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-500 font-mono text-xs">
-                    Not Configured
-                  </span>
+                  <Badge variant="secondary">Not Configured</Badge>
                 )}
-              </div>
+              </CardHeader>
 
-              <div className="space-y-3">
-                <label className="block text-xs font-mono text-slate-400">
+              <CardContent className="p-4 space-y-3">
+                <label className="block text-xs text-zinc-400">
                   {geminiStatus?.isConfigured ? 'Rotate Gemini API Key' : 'Enter Gemini API Key (AIzaSy...)'}
                 </label>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <div className="relative flex-1">
-                    <input
+                    <Input
                       type={showGemini ? 'text' : 'password'}
                       value={geminiInput}
                       onChange={(e) => setGeminiInput(e.target.value)}
                       placeholder={geminiStatus?.isConfigured ? 'Paste new key to rotate...' : 'AIzaSy...'}
-                      className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-[#0B0F17] border border-slate-700 text-slate-100 placeholder-slate-600 font-mono text-xs focus:outline-none focus:border-emerald-500 transition"
+                      className="pr-10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowGemini(!showGemini)}
-                      className="absolute right-3 top-3 text-slate-500 hover:text-slate-300 transition"
+                      className="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-300 transition"
                     >
                       {showGemini ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
 
-                  <button
+                  <Button
                     onClick={() => handleSaveKey('gemini')}
                     disabled={isSavingGemini || !geminiInput}
-                    className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-slate-950 font-bold font-mono text-xs transition shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-1.5 whitespace-nowrap"
+                    variant="default"
+                    size="sm"
+                    className="gap-1.5"
                   >
                     {isSavingGemini ? (
-                      <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                      <span className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
                     ) : geminiStatus?.isConfigured ? (
                       <RefreshCw className="w-3.5 h-3.5" />
                     ) : (
                       <Key className="w-3.5 h-3.5" />
                     )}
                     {geminiStatus?.isConfigured ? 'Rotate Key' : 'Save Key'}
-                  </button>
+                  </Button>
 
                   {geminiStatus?.isConfigured && (
-                    <button
+                    <Button
                       onClick={() => handleDeleteKey('gemini')}
-                      className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-red-500/30 text-slate-400 hover:text-red-400 transition"
+                      variant="destructive"
+                      size="sm"
+                      className="h-9 w-9 p-0"
                       title="Delete key"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </Button>
                   )}
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* 2. Anthropic Key Card */}
-            <div className="p-6 rounded-2xl bg-[#0F172A]/70 border border-slate-800 backdrop-blur-md space-y-4 shadow-xl">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <Card className="border-zinc-800 bg-card-dark shadow-xl">
+              <CardHeader className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800/80">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 font-mono font-bold text-sm">
+                  <div className="w-9 h-9 bg-accent-orange/10 border border-zinc-800  flex items-center justify-center text-accent-orange font-bold text-sm">
                     A
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold font-mono text-white">Anthropic API Key</h3>
-                    <p className="text-[11px] text-slate-400 font-sans">
+                    <CardTitle>Anthropic API Key</CardTitle>
+                    <p className="text-[11px] text-zinc-400 font-sans">
                       Enables exact Claude `messages/count_tokens` API calculation
                     </p>
                   </div>
                 </div>
 
                 {anthropicStatus?.isConfigured ? (
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-xs flex items-center gap-1.5 font-semibold">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    Configured ({anthropicStatus.maskedKey})
-                  </span>
+                  <Badge variant="success">Configured ({anthropicStatus.maskedKey})</Badge>
                 ) : (
-                  <span className="px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-500 font-mono text-xs">
-                    Not Configured
-                  </span>
+                  <Badge variant="secondary">Not Configured</Badge>
                 )}
-              </div>
+              </CardHeader>
 
-              <div className="space-y-3">
-                <label className="block text-xs font-mono text-slate-400">
+              <CardContent className="p-4 space-y-3">
+                <label className="block text-xs text-zinc-400">
                   {anthropicStatus?.isConfigured ? 'Rotate Anthropic API Key' : 'Enter Anthropic API Key (sk-ant-...)'}
                 </label>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <div className="relative flex-1">
-                    <input
+                    <Input
                       type={showAnthropic ? 'text' : 'password'}
                       value={anthropicInput}
                       onChange={(e) => setAnthropicInput(e.target.value)}
                       placeholder={anthropicStatus?.isConfigured ? 'Paste new key to rotate...' : 'sk-ant-api03-...'}
-                      className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-[#0B0F17] border border-slate-700 text-slate-100 placeholder-slate-600 font-mono text-xs focus:outline-none focus:border-emerald-500 transition"
+                      className="pr-10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowAnthropic(!showAnthropic)}
-                      className="absolute right-3 top-3 text-slate-500 hover:text-slate-300 transition"
+                      className="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-300 transition"
                     >
                       {showAnthropic ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
 
-                  <button
+                  <Button
                     onClick={() => handleSaveKey('anthropic')}
                     disabled={isSavingAnthropic || !anthropicInput}
-                    className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-slate-950 font-bold font-mono text-xs transition shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-1.5 whitespace-nowrap"
+                    variant="default"
+                    size="sm"
+                    className="gap-1.5"
                   >
                     {isSavingAnthropic ? (
-                      <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                      <span className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
                     ) : anthropicStatus?.isConfigured ? (
                       <RefreshCw className="w-3.5 h-3.5" />
                     ) : (
                       <Key className="w-3.5 h-3.5" />
                     )}
                     {anthropicStatus?.isConfigured ? 'Rotate Key' : 'Save Key'}
-                  </button>
+                  </Button>
 
                   {anthropicStatus?.isConfigured && (
-                    <button
+                    <Button
                       onClick={() => handleDeleteKey('anthropic')}
-                      className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-red-500/30 text-slate-400 hover:text-red-400 transition"
+                      variant="destructive"
+                      size="sm"
+                      className="h-9 w-9 p-0"
                       title="Delete key"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </Button>
                   )}
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
-        </main>
-      </div>
+        </div>
+      </SidebarLayout>
     </AuthGuard>
   );
 }
