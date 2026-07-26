@@ -10,9 +10,10 @@ import {
   flexRender,
   ColumnDef,
 } from '@tanstack/react-table';
-import { Table, ShieldCheck, ArrowUpDown, DollarSign, Cpu } from 'lucide-react';
+import { Table, ShieldCheck, ArrowUpDown, DollarSign } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ProviderIcon } from '@/components/icons/provider-icons';
 
 interface ComparisonMatrixProps {
   results: ModelInspectionResult[];
@@ -29,8 +30,8 @@ export function ComparisonMatrix({ results }: ComparisonMatrixProps) {
       header: 'Model',
       cell: ({ row }) => (
         <div className="font-mono text-xs font-bold text-white flex items-center gap-2">
-          <Cpu className="w-3.5 h-3.5 text-accent-orange shrink-0" />
-          {row.original.model}
+          <ProviderIcon provider={row.original.provider} size={15} className="text-accent-orange shrink-0" />
+          <span>{row.original.model}</span>
         </div>
       ),
     },
@@ -38,7 +39,10 @@ export function ComparisonMatrix({ results }: ComparisonMatrixProps) {
       accessorKey: 'provider',
       header: 'Provider',
       cell: ({ row }) => (
-        <span className="font-mono text-xs text-zinc-400">{row.original.provider}</span>
+        <div className="font-mono text-xs text-zinc-400 flex items-center gap-1.5">
+          <ProviderIcon provider={row.original.provider} size={13} className="text-zinc-500 shrink-0" />
+          <span>{row.original.provider}</span>
+        </div>
       ),
     },
     {

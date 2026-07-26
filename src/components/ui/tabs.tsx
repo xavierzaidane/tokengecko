@@ -18,6 +18,7 @@ interface TabsTriggerProps {
   children: React.ReactNode;
   className?: string;
   icon?: React.ReactNode;
+  badge?: React.ReactNode;
 }
 
 interface TabsContentProps {
@@ -43,7 +44,7 @@ export function TabsList({ children, className }: TabsListProps) {
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-1 rounded-xl bg-card-dark border border-zinc-800 p-1 font-mono text-xs text-zinc-400',
+        'flex items-center gap-1.5 overflow-x-auto  bg-[#141414] border border-zinc-800/90 p-1 font-mono text-xs text-zinc-400 no-scrollbar',
         className
       )}
     >
@@ -52,7 +53,7 @@ export function TabsList({ children, className }: TabsListProps) {
   );
 }
 
-export function TabsTrigger({ value, children, className, icon }: TabsTriggerProps) {
+export function TabsTrigger({ value, children, className, icon, badge }: TabsTriggerProps) {
   const ctx = React.useContext(TabsContext);
   const isActive = ctx.value === value;
 
@@ -61,15 +62,16 @@ export function TabsTrigger({ value, children, className, icon }: TabsTriggerPro
       type="button"
       onClick={() => ctx.onValueChange(value)}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-mono font-medium transition-all cursor-pointer',
+        'inline-flex items-center gap-2  px-3.5 py-1.5 text-xs font-mono font-medium transition-all cursor-pointer whitespace-nowrap select-none',
         isActive
-          ? 'bg-zinc-800 text-white font-bold border border-zinc-700 shadow-sm'
+          ? 'bg-zinc-800 text-white font-bold border border-zinc-700/80 shadow-md'
           : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40',
         className
       )}
     >
       {icon}
-      {children}
+      <span>{children}</span>
+      {badge}
     </button>
   );
 }
@@ -77,5 +79,5 @@ export function TabsTrigger({ value, children, className, icon }: TabsTriggerPro
 export function TabsContent({ value, children, className }: TabsContentProps) {
   const ctx = React.useContext(TabsContext);
   if (ctx.value !== value) return null;
-  return <div className={cn('focus-visible:outline-none', className)}>{children}</div>;
+  return <div className={cn('focus-visible:outline-none animate-in fade-in-50 duration-150', className)}>{children}</div>;
 }

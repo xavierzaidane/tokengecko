@@ -26,3 +26,56 @@ export interface PromptStats {
   lines: number;
   bytes: number;
 }
+
+export type RecommendationType =
+  | 'cheaper_model_swap'
+  | 'redundancy_detected'
+  | 'context_fit_ok'
+  | 'context_over_limit'
+  | 'context_warning'
+  | 'token_share_breakdown';
+
+export type RecommendationSeverity = 'info' | 'warning' | 'error';
+
+export interface RecommendationSegment {
+  label: string;
+  tokens: number;
+  percentage: number;
+}
+
+export interface Recommendation {
+  id: string;
+  type: RecommendationType;
+  severity: RecommendationSeverity;
+  title: string;
+  message: string;
+  source: 'local' | 'enhanced';
+  details?: {
+    fromModel?: string;
+    toModel?: string;
+    costDelta?: number;
+    costDeltaPercent?: number;
+    duplicateLines?: string[];
+    potentialTokenSavings?: number;
+    segments?: RecommendationSegment[];
+  };
+}
+
+export type PromptHealthStatus = 'good' | 'warning' | 'over_limit';
+
+export interface PromptHealth {
+  status: PromptHealthStatus;
+  label: string;
+  description: string;
+}
+
+export interface StoredAnalysisData {
+  id?: string;
+  prompt_text: string;
+  stats: PromptStats;
+  results: ModelInspectionResult[];
+  recommendations?: Recommendation[];
+  health?: PromptHealth;
+  share_token?: string;
+  created_at?: string;
+}
