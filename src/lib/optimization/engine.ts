@@ -5,6 +5,11 @@ import {
   RecommendationSegment,
 } from '@/lib/analysis/schema';
 import { estimateTokenCount } from '@/lib/tokenizers/engine';
+import { DEFAULT_MODELS } from '@/lib/models/registry';
+import {
+  classifyPromptTaskType,
+  TaskClassification,
+} from '@/lib/optimization/classifier';
 
 export interface OptimizationAnalysisResult {
   health: PromptHealth;
@@ -12,6 +17,9 @@ export interface OptimizationAnalysisResult {
   segments: RecommendationSegment[];
   cheapestModel?: ModelInspectionResult;
   largestContextModel?: ModelInspectionResult;
+  bestTradeoffModel?: ModelInspectionResult;
+  taskClassification?: TaskClassification;
+  enrichedResults: ModelInspectionResult[];
 }
 
 export function analyzePromptOptimization(
@@ -25,34 +33,76 @@ export function analyzePromptOptimization(
       health: {
         status: 'good',
         label: 'Ready for Analysis',
-        description: 'Enter a prompt payload to evaluate health and receive optimization suggestions.',
+        description:
+          'Enter a prompt payload to evaluate health and receive optimization suggestions.',
       },
       recommendations: [],
       segments: [],
+      enrichedResults: [],
     };
   }
 
-  // 1. Find Leaders: Cheapest model & Largest context model
-  const sortedByCost = [...results].sort(
+  // 1. Classify Task Type
+  const taskClassification = classifyPromptTaskType(
+    promptText,
+    results[0]?.inputTokens || 0
+  );
+
+  // 2. Enrich Model Results with Quality Scores & Calculate Tradeoff Score
+  const enrichedResults: ModelInspectionResult[] = results.map((res) => {
+    const regModel = DEFAULT_MODELS.find(
+      (m) => m.model_id === res.model_id || m.name === res.model
+    );
+    const qualityScores = regModel?.qualityScores || res.qualityScores || {
+      reasoning: 80,
+      coding: 80,
+      general: 80,
+      longContext: 80,
+      source: 'estimated',
+      lastUpdated: '2026-07-20',
+    };
+
+    const taskQuality = qualityScores[taskClassification.taskType] || 80;
+    const cost = Math.max(res.estimatedCost.total, 0.000001);
+
+    // Tradeoff Score Formula: Quality / (Cost * 1000)
+    const rawTradeoff = taskQuality / (cost * 1000);
+    const tradeoffScore = Math.round(rawTradeoff * 10) / 10;
+
+    return {
+      ...res,
+      qualityScores,
+      tradeoffScore,
+    };
+  });
+
+  // 3. Find Leaders: Cheapest model, Largest context model, Best Tradeoff model
+  const sortedByCost = [...enrichedResults].sort(
     (a, b) => a.estimatedCost.total - b.estimatedCost.total
   );
   const cheapestModel = sortedByCost[0];
   const mostExpensiveModel = sortedByCost[sortedByCost.length - 1];
 
-  const sortedByContext = [...results].sort(
+  const sortedByContext = [...enrichedResults].sort(
     (a, b) => b.contextWindow - a.contextWindow
   );
   const largestContextModel = sortedByContext[0];
 
-  // 2. Evaluate Prompt Health
+  const sortedByTradeoff = [...enrichedResults].sort(
+    (a, b) => (b.tradeoffScore || 0) - (a.tradeoffScore || 0)
+  );
+  const bestTradeoffModel = sortedByTradeoff[0];
+
+  // 4. Evaluate Prompt Health
   let healthStatus: 'good' | 'warning' | 'over_limit' = 'good';
   let healthLabel = 'Optimal Prompt Health';
-  let healthDescription = 'Prompt fits comfortably across all selected model context windows.';
+  let healthDescription =
+    'Prompt fits comfortably across all selected model context windows.';
 
-  const overLimitModels = results.filter(
+  const overLimitModels = enrichedResults.filter(
     (r) => r.inputTokens > r.contextWindow
   );
-  const highUsageModels = results.filter(
+  const highUsageModels = enrichedResults.filter(
     (r) => r.contextUsagePercent >= 80 && r.inputTokens <= r.contextWindow
   );
 
@@ -70,9 +120,34 @@ export function analyzePromptOptimization(
       .join(', ')}.`;
   }
 
-  // 3. Rule 1: Cheaper Model Swap Evaluator
+  // 5. Recommendation Rule 1: Best Cost/Quality Tradeoff Recommendation
+  if (bestTradeoffModel && bestTradeoffModel.qualityScores) {
+    const qScore = bestTradeoffModel.qualityScores[taskClassification.taskType];
+    const isCheapest = cheapestModel?.model_id === bestTradeoffModel.model_id;
+
+    recommendations.push({
+      id: 'rec_best_tradeoff',
+      type: 'best_value_model',
+      severity: 'info',
+      title: `Best Cost/Quality Tradeoff (${taskClassification.label})`,
+      message: isCheapest
+        ? `${bestTradeoffModel.model} provides the absolute best value score (${bestTradeoffModel.tradeoffScore}) with a ${qScore}/100 quality rating on ${taskClassification.label.toLowerCase()} tasks.`
+        : `${bestTradeoffModel.model} offers an optimal balance of cost ($${bestTradeoffModel.estimatedCost.total.toFixed(
+            5
+          )}) and quality (${qScore}/100) for ${taskClassification.label.toLowerCase()} tasks.`,
+      source: 'local',
+      details: {
+        taskType: taskClassification.taskType,
+        recommendedModel: bestTradeoffModel.model,
+        cheapestModel: cheapestModel?.model,
+        tradeoffScore: bestTradeoffModel.tradeoffScore,
+      },
+    });
+  }
+
+  // 6. Recommendation Rule 2: Cheaper Model Swap Evaluator
   if (
-    results.length > 1 &&
+    enrichedResults.length > 1 &&
     mostExpensiveModel &&
     cheapestModel &&
     mostExpensiveModel.model_id !== cheapestModel.model_id
@@ -103,7 +178,7 @@ export function analyzePromptOptimization(
     }
   }
 
-  // 4. Rule 2: Context Fit Evaluation
+  // 7. Recommendation Rule 3: Context Fit Evaluation
   if (overLimitModels.length > 0) {
     overLimitModels.forEach((m, idx) => {
       recommendations.push({
@@ -136,12 +211,12 @@ export function analyzePromptOptimization(
       type: 'context_fit_ok',
       severity: 'info',
       title: 'Context Fit Verified',
-      message: `Prompt token payload fits within context limits across all ${results.length} selected models.`,
+      message: `Prompt token payload fits within context limits across all ${enrichedResults.length} selected models.`,
       source: 'local',
     });
   }
 
-  // 5. Rule 3: Redundancy & Duplication Detector
+  // 8. Recommendation Rule 4: Redundancy & Duplication Detector
   const lines = promptText
     .split('\n')
     .map((l) => l.trim())
@@ -161,7 +236,10 @@ export function analyzePromptOptimization(
 
   if (duplicateLines.length > 0) {
     const redundantText = duplicateLines.join(' ');
-    const potentialTokenSavings = estimateTokenCount(redundantText, 'cl100k_base');
+    const potentialTokenSavings = estimateTokenCount(
+      redundantText,
+      'cl100k_base'
+    );
 
     if (potentialTokenSavings > 5) {
       if (healthStatus === 'good') {
@@ -185,11 +263,11 @@ export function analyzePromptOptimization(
     }
   }
 
-  // 6. Rule 4: Token-Share Breakdown Segmenter (JSON / Code / Instructions)
+  // 9. Recommendation Rule 5: Token-Share Breakdown Segmenter
   const segments: RecommendationSegment[] = [];
   const totalTokens = Math.max(
     1,
-    results[0]?.inputTokens || estimateTokenCount(promptText, 'cl100k_base')
+    enrichedResults[0]?.inputTokens || estimateTokenCount(promptText, 'cl100k_base')
   );
 
   let jsonTokens = 0;
@@ -244,32 +322,6 @@ export function analyzePromptOptimization(
     });
   }
 
-  // Generate Recommendation for dominant non-text segment
-  const jsonSeg = segments.find((s) => s.label === 'JSON Data');
-  const codeSeg = segments.find((s) => s.label === 'Code Snippets');
-
-  if (jsonSeg && jsonSeg.percentage >= 25) {
-    recommendations.push({
-      id: 'rec_token_share_json',
-      type: 'token_share_breakdown',
-      severity: 'info',
-      title: 'High JSON Token Consumption',
-      message: `Structured JSON payloads account for ${jsonSeg.percentage}% (${jsonSeg.tokens} tokens) of total prompt overhead.`,
-      source: 'local',
-      details: { segments },
-    });
-  } else if (codeSeg && codeSeg.percentage >= 25) {
-    recommendations.push({
-      id: 'rec_token_share_code',
-      type: 'token_share_breakdown',
-      severity: 'info',
-      title: 'Code Snippet Overhead',
-      message: `Fenced code blocks contribute ${codeSeg.percentage}% (${codeSeg.tokens} tokens) of your prompt token budget.`,
-      source: 'local',
-      details: { segments },
-    });
-  }
-
   return {
     health: {
       status: healthStatus,
@@ -280,5 +332,8 @@ export function analyzePromptOptimization(
     segments,
     cheapestModel,
     largestContextModel,
+    bestTradeoffModel,
+    taskClassification,
+    enrichedResults,
   };
 }

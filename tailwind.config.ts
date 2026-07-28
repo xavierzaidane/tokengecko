@@ -10,6 +10,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        brand: '#3D81E3',
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -51,9 +52,10 @@ export default {
       },
       fontFamily: {
         mono: ['var(--font-mono)', 'monospace'],
-        sans: ['var(--font-sans)', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
       },
     },
   },
   plugins: [],
 } satisfies Config;
+

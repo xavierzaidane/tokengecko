@@ -82,7 +82,7 @@ export const SidebarTrigger = React.forwardRef<
       title={open ? 'Collapse Sidebar (Cmd+B)' : 'Expand Sidebar (Cmd+B)'}
       {...props}
     >
-      <PanelLeft className="w-4 h-4 text-accent-orange" />
+      <PanelLeft className="w-4 h-4 text-white" />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );

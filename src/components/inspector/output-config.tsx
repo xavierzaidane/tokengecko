@@ -14,10 +14,10 @@ const PRESET_OUTPUTS = [256, 512, 1024, 2048, 4096];
 
 export function OutputConfig({ estimatedOutputTokens, onChange }: OutputConfigProps) {
   return (
-    <Card className="border-zinc-800 bg-card-dark shadow-xl h-full flex flex-col justify-between">
+    <Card className="border-zinc-800 bg-card-dark shadow-xl flex flex-col justify-between">
       <CardHeader className="p-4">
         <div className="flex items-center gap-2">
-          <Sliders className="w-4 h-4 text-accent-orange" />
+          <Sliders className="w-4 h-4 text-white" />
           <CardTitle>Est. Output Tokens</CardTitle>
         </div>
       </CardHeader>

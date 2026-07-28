@@ -1,3 +1,5 @@
+import { QualityScores } from '@/lib/models/registry';
+
 export interface CostBreakdown {
   input: number;
   output: number;
@@ -17,6 +19,8 @@ export interface ModelInspectionResult {
   tokenizer: string;
   estimationMethod: 'Local Tokenizer' | 'Exact (API)' | 'Exact API';
   status: string;
+  qualityScores?: QualityScores;
+  tradeoffScore?: number;
 }
 
 export interface PromptStats {
@@ -29,6 +33,7 @@ export interface PromptStats {
 
 export type RecommendationType =
   | 'cheaper_model_swap'
+  | 'best_value_model'
   | 'redundancy_detected'
   | 'context_fit_ok'
   | 'context_over_limit'
@@ -42,6 +47,8 @@ export interface RecommendationSegment {
   tokens: number;
   percentage: number;
 }
+
+export type TaskType = 'coding' | 'reasoning' | 'longContext' | 'general';
 
 export interface Recommendation {
   id: string;
@@ -58,6 +65,10 @@ export interface Recommendation {
     duplicateLines?: string[];
     potentialTokenSavings?: number;
     segments?: RecommendationSegment[];
+    taskType?: TaskType;
+    recommendedModel?: string;
+    cheapestModel?: string;
+    tradeoffScore?: number;
   };
 }
 

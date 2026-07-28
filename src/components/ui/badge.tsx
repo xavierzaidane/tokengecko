@@ -12,7 +12,7 @@ const badgeVariants = cva(
         success: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
         destructive: 'border-red-500/30 bg-red-500/10 text-red-400',
         outline: 'border-zinc-800 text-zinc-400',
-        orange: 'border-accent-orange bg-accent-orange text-zinc-950 font-bold',
+        orange: 'border-white bg-white text-zinc-950 font-bold',
       },
     },
     defaultVariants: {

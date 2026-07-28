@@ -3,7 +3,8 @@
 import React, { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { PromptStats } from '@/lib/analysis/schema';
-import { FileText, AlignLeft, Hash, Code2, Database, Zap, Layers, FileCode, ChevronDown } from 'lucide-react';
+import { AnalysisStatus } from '@/types/analysis';
+import { FileText, AlignLeft, Hash, Code2, Database, Zap, Layers, FileCode, ChevronDown, Play, Sparkles } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,10 @@ interface MonacoPromptEditorProps {
   onChange: (value: string) => void;
   stats: PromptStats;
   height?: string;
+  onAnalyze?: () => void;
+  isAnalyzing?: boolean;
+  status?: AnalysisStatus;
+  hasSelectedModels?: boolean;
 }
 
 const SAMPLE_PROMPTS = [
@@ -54,6 +59,10 @@ export function MonacoPromptEditor({
   onChange,
   stats,
   height = '520px',
+  onAnalyze,
+  isAnalyzing = false,
+  status = 'idle',
+  hasSelectedModels = true,
 }: MonacoPromptEditorProps) {
   const [selectedLanguageOverride, setSelectedLanguageOverride] = useState<string>('auto');
 
@@ -133,20 +142,22 @@ export function MonacoPromptEditor({
     });
   };
 
+  const isAnalyzeDisabled = !onAnalyze || isAnalyzing || !hasSelectedModels || !promptText.trim();
+
   return (
     <Card className="border-zinc-800 bg-card-dark shadow-xl w-full font-mono">
       {/* Header: Title, Syntax Selector & Live Statistics */}
       <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border-b border-zinc-800/80">
         <div className="flex items-center gap-2.5">
-          <FileText className="w-4 h-4 text-accent-orange" />
-          <CardTitle className="text-sm font-bold text-white">IDE Prompt Payload Editor</CardTitle>
+          <span className="w-2 h-2 bg-accent-orange shrink-0" />
+          <CardTitle className="text-sm font-bold text-white">Editor</CardTitle>
 
           {/* Syntax Mode Selector Dropdown */}
           <div className="relative inline-flex items-center">
             <select
               value={selectedLanguageOverride}
               onChange={(e) => setSelectedLanguageOverride(e.target.value)}
-              className="appearance-none bg-accent-orange/10 border border-accent-orange/40 text-accent-orange text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 pr-5 rounded focus:outline-none cursor-pointer hover:bg-accent-orange/20 transition"
+              className="appearance-none bg-white border border-zinc-800 text-black text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 pr-5 rounded focus:outline-none cursor-pointer hover:bg-accent-orange/20 transition"
             >
               <option value="auto" className="bg-zinc-900 text-zinc-200">
                 Auto ({autoDetectedLanguage})
@@ -156,24 +167,24 @@ export function MonacoPromptEditor({
               <option value="markdown" className="bg-zinc-900 text-zinc-200">Markdown</option>
               <option value="plaintext" className="bg-zinc-900 text-zinc-200">Plain Text</option>
             </select>
-            <ChevronDown className="w-3 h-3 text-accent-orange absolute right-1 pointer-events-none" />
+            <ChevronDown className="w-3 h-3 text-black absolute right-1 pointer-events-none" />
           </div>
         </div>
 
         {/* Real-time Prompt Metrics Badges */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <Badge variant="secondary" className="bg-zinc-900 border-zinc-800 text-zinc-300">
-            <Hash className="w-3 h-3 text-accent-orange mr-1" />
+            <Hash className="w-3 h-3 text-white mr-1" />
             {stats.characters.toLocaleString()} chars
           </Badge>
           <Badge variant="secondary" className="bg-zinc-900 border-zinc-800 text-zinc-300">
-            <AlignLeft className="w-3 h-3 text-accent-orange mr-1" />
+            <AlignLeft className="w-3 h-3 text-white mr-1" />
             {stats.words.toLocaleString()} words
           </Badge>
           <Badge variant="secondary" className="bg-zinc-900 border-zinc-800 text-zinc-300">
             {stats.lines.toLocaleString()} lines
           </Badge>
-          <Badge variant="default" className="bg-accent-orange text-zinc-950 font-bold">
+          <Badge variant="default" className="bg-white text-zinc-950 font-bold">
             {stats.bytes.toLocaleString()} B
           </Badge>
         </div>
@@ -211,14 +222,10 @@ export function MonacoPromptEditor({
           />
         </div>
 
-        {/* Preset Sample Loaders Footer */}
-        <div className="p-3 bg-zinc-950/60 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-            <Layers className="w-3.5 h-3.5 text-accent-orange" />
-            <span>Load Preset Sample:</span>
-          </div>
-
+        {/* Preset Sample Loaders & Explicit Analyze Action Footer */}
+        <div className="p-3 bg-zinc-950/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-zinc-800/60">
           <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs text-zinc-400 font-mono mr-1">Samples:</span>
             {SAMPLE_PROMPTS.map((sample) => {
               const Icon = sample.icon;
               return (
@@ -227,14 +234,46 @@ export function MonacoPromptEditor({
                   onClick={() => onChange(sample.text)}
                   variant="outline"
                   size="sm"
-                  className="gap-1.5 text-[11px] h-7 px-2.5 bg-input-dark border-zinc-800 hover:border-accent-orange/50 hover:text-white transition"
+                  className="gap-1.5 text-[11px] h-7 px-2 bg-input-dark border-zinc-800 hover:border-accent-orange/50 hover:text-white transition"
                 >
-                  <Icon className="w-3 h-3 text-accent-orange" />
+                  <Icon className="w-3 h-3 text-white" />
                   {sample.name}
                 </Button>
               );
             })}
           </div>
+
+          {/* Primary Analyze Prompt Action Button */}
+          {onAnalyze && (
+            <Button
+              onClick={onAnalyze}
+              disabled={isAnalyzeDisabled}
+              className={`font-mono text-xs font-bold gap-2 px-5 py-2 transition-all shadow-md cursor-pointer shrink-0 ${
+                status === 'stale'
+                  ? 'bg-white hover:bg-zinc-200 text-zinc-950 ring-2 ring-amber-400/50 animate-pulse'
+                  : 'bg-white hover:bg-zinc-200 text-zinc-950'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+              title={
+                !hasSelectedModels
+                  ? 'Select at least 1 model to analyze'
+                  : !promptText.trim()
+                  ? 'Enter prompt text to analyze'
+                  : 'Run tokenization & cost inspection'
+              }
+            >
+              {isAnalyzing ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                  <span>Analyzing...</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>{status === 'stale' ? 'Re-Analyze Prompt' : 'Analyze Prompt'}</span>
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -117,11 +117,10 @@ export default function SettingsPage() {
 
           {feedbackMsg && (
             <div
-              className={`p-4 font-mono text-xs flex items-center gap-2 border ${
-                feedbackMsg.type === 'success'
+              className={`p-4 font-mono text-xs flex items-center gap-2 border ${feedbackMsg.type === 'success'
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
                   : 'bg-red-500/10 border-red-500/30 text-red-400'
-              }`}
+                }`}
             >
               {feedbackMsg.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
               {feedbackMsg.text}

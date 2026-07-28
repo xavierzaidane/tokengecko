@@ -11,184 +11,198 @@ import {
   Zap,
   TrendingDown,
   Maximize2,
-  Lightbulb,
   Hash,
   Layers,
   ArrowRight,
+  Award,
+  Cpu,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ProviderIcon } from '@/components/icons/provider-icons';
 
+import { TokenDistributionBar } from '@/components/inspector/token-distribution-bar';
+import { RegistrySnapshot } from '@/types/analysis';
+
 interface InspectionSummaryPanelProps {
   promptText: string;
   results: ModelInspectionResult[];
+  primaryModelId?: string;
+  onApplySuggestion?: (suggestedText: string) => void;
   onSelectModel?: (modelId: string) => void;
+  registrySnapshot?: RegistrySnapshot;
 }
 
 export function InspectionSummaryPanel({
   promptText,
   results,
-  onSelectModel,
+  primaryModelId,
+  onApplySuggestion,
+  registrySnapshot,
 }: InspectionSummaryPanelProps) {
-  const analysis = analyzePromptOptimization(promptText, results);
-  const { health, recommendations, segments, cheapestModel, largestContextModel } = analysis;
+  const optimization = analyzePromptOptimization(promptText, results);
+  const {
+    health,
+    recommendations,
+    segments,
+    cheapestModel,
+    largestContextModel,
+    bestTradeoffModel,
+    taskClassification,
+  } = optimization;
 
-  const primaryResult = results[0];
+  const primaryResult =
+    results.find((r) => r.model_id === primaryModelId) || results[0];
 
   return (
     <div className="w-full space-y-6 font-mono">
-      {/* 1. Health Status Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 shadow-xl">
+      {/* 1. Health Status & Task Type Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4">
         <div className="flex items-center gap-2.5">
           <div>
-            <h2 className="text-base font-bold text-white tracking-tight">Prompt Optimization & Health Summary</h2>
-            <p className="text-xs text-zinc-400">Real-time health evaluation, token share distribution, and model cost savings.</p>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-white tracking-tight">
+                Prompt Optimization & Health Summary
+              </h2>
+              {taskClassification && (
+                <Badge
+                  variant="outline"
+                  className="bg-accent-orange/15 text-accent-orange  text-[10px] font-mono uppercase px-2 py-0.5"
+                >
+                  <Cpu className="w-3 h-3 mr-1" />
+                  Task: {taskClassification.label}
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-zinc-400 font-sans mt-0.5">
+              {health.description}
+            </p>
           </div>
         </div>
 
-        {/* Prompt Health Badge */}
-        <Badge
-          variant="outline"
-          className={`font-mono text-xs px-3 py-1.5 flex items-center gap-2 font-bold shrink-0 ${
-            health.status === 'good'
-              ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400'
-              : health.status === 'warning'
-              ? 'bg-amber-500/10 border-amber-500/40 text-amber-400'
-              : 'bg-red-500/10 border-red-500/40 text-red-400'
-          }`}
-        >
-          {health.status === 'good' ? (
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          ) : health.status === 'warning' ? (
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
-          ) : (
-            <AlertOctagon className="w-4 h-4 text-red-400" />
-          )}
-          <span>{health.label}</span>
-        </Badge>
       </div>
 
-      {/* 2. Prominent Key Metric Cards (Bigger Stats) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Primary Model Tokens */}
-        <div className="p-5 bg-card-dark border border-zinc-800  shadow-xl relative overflow-hidden flex flex-col justify-between space-y-3">
+      {/* 2. Key Metrics Grid (5 Leader Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        {/* Metric 1: Primary Tokens */}
+        <div className="p-5 bg-card-dark border border-zinc-800 shadow-xl relative overflow-hidden flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between text-xs font-bold text-zinc-400 uppercase tracking-wider">
             <span>Primary Tokens</span>
-            <Hash className="w-4 h-4 text-accent-orange" />
           </div>
           <div>
-            <div className="text-3xl sm:text-4xl font-normal text-white tracking-tight">
+            <div className="text-3xl sm:text-4xl font-sans text-white tracking-tight">
               {primaryResult ? primaryResult.inputTokens.toLocaleString() : 0}
             </div>
             <div className="text-xs text-zinc-500 mt-1 flex items-center gap-1.5">
-              {primaryResult && <ProviderIcon provider={primaryResult.provider} size={13} className="text-accent-orange" />}
-              <span>{primaryResult?.model || 'No model'}</span>
+              {primaryResult && (
+                <>
+                  <ProviderIcon provider={primaryResult.provider} size={14} />
+                  <span className="truncate">{primaryResult.model}</span>
+                </>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Primary Est Total Cost */}
-        <div className="p-5 bg-card-dark border border-zinc-800  shadow-xl relative overflow-hidden flex flex-col justify-between space-y-3">
+        {/* Metric 2: Estimated Cost */}
+        <div className="p-5 bg-card-dark border border-zinc-800 shadow-xl relative overflow-hidden flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between text-xs font-bold text-zinc-400 uppercase tracking-wider">
             <span>Estimated Cost</span>
-            <Zap className="w-4 h-4 text-accent-orange" />
           </div>
           <div>
-            <div className="text-3xl sm:text-4xl font-normal text-accent-orange tracking-tight">
+            <div className="text-3xl sm:text-4xl font-sans text-white tracking-tight">
               ${primaryResult ? primaryResult.estimatedCost.total.toFixed(5) : '0.00000'}
             </div>
             <div className="text-xs text-zinc-500 mt-1">
-              Input + Output payload
+              Per execution run
             </div>
           </div>
         </div>
 
-        {/* Cheapest Model Leader */}
-        <div className="p-5 bg-card-dark border border-zinc-800  shadow-xl relative overflow-hidden flex flex-col justify-between space-y-3">
+        {/* Metric 3: Cheapest Model Leader */}
+        <div className="p-5 bg-card-dark border border-zinc-800 shadow-xl relative overflow-hidden flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between text-xs font-bold text-zinc-400 uppercase tracking-wider">
             <span>Cheapest Model</span>
-            <TrendingDown className="w-4 h-4 text-emerald-400" />
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl font-normal text-emerald-400 tracking-tight truncate flex items-center gap-2">
-              {cheapestModel && <ProviderIcon provider={cheapestModel.provider} size={20} className="text-emerald-400 shrink-0" />}
+            <div className="text-2xl sm:text-xl font-sans text-white tracking-tight truncate flex items-center gap-2">
+              {cheapestModel && (
+                <ProviderIcon
+                  provider={cheapestModel.provider}
+                  size={20}
+                  className="text-emerald-400 shrink-0"
+                />
+              )}
               <span className="truncate">{cheapestModel ? cheapestModel.model : 'N/A'}</span>
             </div>
-            <div className="text-xs text-zinc-400 mt-1 font-bold">
-              ${cheapestModel ? cheapestModel.estimatedCost.total.toFixed(5) : '0.00000'} / run
+            <div className="text-xs text-zinc-400 mt-1">
+              ${cheapestModel ? cheapestModel.estimatedCost.total.toFixed(5) : '0.00'} / run
             </div>
           </div>
         </div>
 
-        {/* Max Context Model Leader */}
-        <div className="p-5 bg-card-dark border border-zinc-800  shadow-xl relative overflow-hidden flex flex-col justify-between space-y-3">
+        {/* Metric 4: Best Value (Cost/Quality Tradeoff) */}
+        <div className="p-5 bg-card-dark border border-zinc-800 shadow-xl relative overflow-hidden flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between text-xs font-bold text-zinc-400 uppercase tracking-wider">
-            <span>Max Context Leader</span>
-            <Maximize2 className="w-4 h-4 text-accent-orange" />
+            <span>Best Value Model</span>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl font-normal text-white tracking-tight truncate flex items-center gap-2">
-              {largestContextModel && <ProviderIcon provider={largestContextModel.provider} size={20} className="text-accent-orange shrink-0" />}
-              <span className="truncate">{largestContextModel ? largestContextModel.model : 'N/A'}</span>
+            <div className="text-2xl sm:text-xl font-sans text-white tracking-tight truncate flex items-center gap-2">
+              {bestTradeoffModel && (
+                <ProviderIcon
+                  provider={bestTradeoffModel.provider}
+                  size={20}
+                  className="shrink-0"
+                />
+              )}
+              <span className="truncate">{bestTradeoffModel ? bestTradeoffModel.model : 'N/A'}</span>
             </div>
-            <div className="text-xs text-zinc-400 mt-1 font-bold">
-              {largestContextModel ? (largestContextModel.contextWindow / 1000).toFixed(0) : 0}k token window
+            <div className="text-xs text-zinc-400 mt-1 flex items-center justify-between">
+              <span>
+                Quality: {bestTradeoffModel?.qualityScores?.[taskClassification?.taskType || 'general'] || 80}/100
+              </span>
+              <span className="text-white font-bold">
+                Score: {bestTradeoffModel?.tradeoffScore || 0}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Metric 5: Max Context Leader */}
+        <div className="p-5 bg-card-dark border border-zinc-800 shadow-xl relative overflow-hidden flex flex-col justify-between space-y-3">
+          <div className="flex items-center justify-between text-xs font-bold text-zinc-400 uppercase tracking-wider">
+            <span>Max Context Leader</span>
+          </div>
+          <div>
+            <div className="text-2xl sm:text-xl font-sans text-white tracking-tight truncate flex items-center gap-2">
+              {largestContextModel && (
+                <ProviderIcon
+                  provider={largestContextModel.provider}
+                  size={20}
+                  className="text-accent-orange shrink-0"
+                />
+              )}
+              <span className="truncate">
+                {largestContextModel ? largestContextModel.model : 'N/A'}
+              </span>
+            </div>
+            <div className="text-xs text-zinc-400 mt-1">
+              {largestContextModel
+                ? `${(largestContextModel.contextWindow / 1000).toFixed(0)}k window`
+                : '0k'}
             </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Token Distribution Breakdown Segment Panel */}
-      {segments.length > 0 && (
-        <div className="p-5 bg-card-dark border border-zinc-800  shadow-xl space-y-3">
-          <div className="flex items-center justify-between text-xs font-bold">
-            <span className="text-zinc-200 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-accent-orange" />
-              Token Distribution Breakdown
-            </span>
-            <span className="text-zinc-400 font-normal">
-              {segments.length} section(s) analyzed
-            </span>
-          </div>
-
-          {/* Stacked Progress Bar */}
-          <div className="w-full h-3 bg-zinc-800 rounded-full overflow-hidden flex">
-            {segments.map((seg, idx) => {
-              const colors = ['bg-accent-orange', 'bg-blue-500', 'bg-purple-500'];
-              return (
-                <div
-                  key={seg.label}
-                  style={{ width: `${seg.percentage}%` }}
-                  className={`h-full ${colors[idx % colors.length]}`}
-                  title={`${seg.label}: ${seg.percentage}% (${seg.tokens} tokens)`}
-                />
-              );
-            })}
-          </div>
-
-          {/* Legend Tags */}
-          <div className="flex flex-wrap items-center gap-4 text-xs pt-1">
-            {segments.map((seg, idx) => {
-              const dotColors = ['bg-accent-orange', 'bg-blue-500', 'bg-purple-500'];
-              return (
-                <div key={seg.label} className="flex items-center gap-1.5 text-zinc-400">
-                  <span className={`w-2.5 h-2.5 rounded-full ${dotColors[idx % dotColors.length]}`} />
-                  <span>
-                    {seg.label}: <strong className="text-white">{seg.percentage}%</strong> ({seg.tokens} tok)
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* 3. Token-Share Breakdown Bar */}
+      {segments.length > 0 && <TokenDistributionBar segments={segments} />}
 
       {/* 4. Actionable Recommendations Engine Panel */}
-      <div className="p-5 bg-card-dark border border-zinc-800  shadow-xl space-y-4">
+      <div className="p-5  space-y-4">
         <div className="flex items-center justify-between text-xs font-bold text-zinc-200">
           <span className="flex items-center gap-2">
-            <Lightbulb className="w-4 h-4 text-accent-orange" />
+            <span className="w-2 h-2 bg-accent-orange shrink-0" />
             Optimization Engine Recommendations ({recommendations.length})
           </span>
         </div>
@@ -198,11 +212,13 @@ export function InspectionSummaryPanel({
             recommendations.map((rec) => (
               <div
                 key={rec.id}
-                className={`p-4 border  transition ${
+                className={`p-4 border transition ${
                   rec.severity === 'error'
                     ? 'bg-red-500/10 border-red-500/30 text-red-200'
                     : rec.severity === 'warning'
                     ? 'bg-amber-500/10 border-amber-500/30 text-amber-200'
+                    : rec.type === 'best_value_model'
+                    ? 'bg-amber-500/5 border-amber-500/40 text-zinc-200'
                     : 'bg-zinc-900/90 border-zinc-800 text-zinc-200'
                 }`}
               >
@@ -212,50 +228,64 @@ export function InspectionSummaryPanel({
                       <AlertOctagon className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
                     ) : rec.severity === 'warning' ? (
                       <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                    ) : rec.type === 'best_value_model' ? (
+                      <Award className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                     ) : (
-                      <Lightbulb className="w-5 h-5 text-accent-orange shrink-0 mt-0.5" />
+                      <Sparkles className="w-5 h-5 text-white/20 shrink-0 mt-0.5" />
                     )}
                     <div>
                       <div className="text-sm font-bold text-white flex items-center gap-2">
-                        <span>{rec.title}</span>
+                        {rec.title}
                         {rec.details?.costDeltaPercent && (
-                          <Badge className="bg-emerald-500/20 border-emerald-500/40 text-emerald-400 text-[10px] px-1.5 py-0">
-                            -{rec.details.costDeltaPercent}% Cost
+                          <Badge
+                            variant="outline"
+                            className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 text-[10px]"
+                          >
+                            Save ~{rec.details.costDeltaPercent}%
+                          </Badge>
+                        )}
+                        {rec.type === 'best_value_model' && (
+                          <Badge
+                            variant="outline"
+                            className="bg-amber-500/20 text-amber-400 border-amber-500/40 text-[10px]"
+                          >
+                            Cost/Quality Winner
                           </Badge>
                         )}
                       </div>
-                      <p className="text-xs text-zinc-400 leading-relaxed mt-1">
+                      <p className="text-xs text-zinc-300 mt-1 font-sans">
                         {rec.message}
                       </p>
                     </div>
                   </div>
-
-                  {rec.details?.toModel && onSelectModel && (
-                    <Button
-                      onClick={() => {
-                        const target = results.find(
-                          (r) => r.model === rec.details?.toModel
-                        );
-                        if (target) onSelectModel(target.model_id);
-                      }}
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5 text-xs h-7 px-3 border-zinc-700 hover:border-accent-orange text-accent-orange shrink-0"
-                    >
-                      <span>Apply</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Button>
-                  )}
                 </div>
               </div>
             ))
           ) : (
-            <div className="p-4 bg-input-dark border border-zinc-800 text-zinc-500 text-xs text-center ">
-              No active recommendations. Run prompt analysis to view optimization suggestions.
+            <div className="p-4 bg-zinc-900 border border-zinc-800 text-xs text-zinc-400">
+              No recommendations generated yet. Enter prompt content above.
             </div>
           )}
         </div>
       </div>
+
+      {registrySnapshot && (
+        <div className="p-3  text-[11px] font-mono text-zinc-400 flex flex-wrap items-center justify-between gap-2">
+          <span>
+            Data Source:{' '}
+            <strong className="text-white">
+              {registrySnapshot.source === 'openrouter' ? 'Live OpenRouter Registry' : 'Seed Registry Fallback'}
+            </strong>
+          </span>
+          <span>
+            Snapshot:{' '}
+            <strong className="text-accent-orange">
+              {new Date(registrySnapshot.lastSyncedAt).toLocaleTimeString()}
+            </strong>{' '}
+            ({registrySnapshot.totalModels} models available)
+          </span>
+        </div>
+      )}
     </div>
   );
 }

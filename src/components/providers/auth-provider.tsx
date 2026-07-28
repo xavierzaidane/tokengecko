@@ -32,23 +32,63 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const SESSION_KEY = 'tokengecko_user_session';
+const TOKEN_KEY = 'tokengecko_access_token';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cachedToken = localStorage.getItem(TOKEN_KEY);
+        if (cachedToken) {
+          insforge.setAccessToken(cachedToken);
+        }
+        const cachedUser = localStorage.getItem(SESSION_KEY);
+        if (cachedUser) {
+          return JSON.parse(cachedUser);
+        }
+      } catch {
+        // Fallback
+      }
+    }
+    return null;
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const fetchCurrentUser = async () => {
     try {
-      setIsLoading(true);
+      if (typeof window !== 'undefined') {
+        const cachedToken = localStorage.getItem(TOKEN_KEY);
+        if (cachedToken) {
+          insforge.setAccessToken(cachedToken);
+        }
+        const cached = localStorage.getItem(SESSION_KEY);
+        if (cached && !user) {
+          try {
+            setUser(JSON.parse(cached));
+          } catch {
+            // Ignore parse error
+          }
+        }
+      }
+
       const { data, error } = await insforge.auth.getCurrentUser();
       if (data?.user) {
-        setUser(data.user as User);
-      } else {
+        const updatedUser = data.user as User;
+        setUser(updatedUser);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(SESSION_KEY, JSON.stringify(updatedUser));
+        }
+      } else if (error && (error as any)?.status === 401 && typeof window !== 'undefined') {
+        // Only clear session if explicitly unauthenticated (401) by server
+        localStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem(TOKEN_KEY);
+        insforge.setAccessToken(null);
         setUser(null);
       }
     } catch (err) {
       console.error('Failed to get current user:', err);
-      setUser(null);
+      // Preserve cached session on network error or offline mode
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +102,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     const { data, error } = await insforge.auth.signInWithPassword({ email, password });
     if (data?.user) {
-      setUser(data.user as User);
+      const signedInUser = data.user as User;
+      setUser(signedInUser);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(SESSION_KEY, JSON.stringify(signedInUser));
+        if ((data as any).accessToken) {
+          localStorage.setItem(TOKEN_KEY, (data as any).accessToken);
+          insforge.setAccessToken((data as any).accessToken);
+        }
+      }
     }
     setIsLoading(false);
     return { error };
@@ -75,8 +123,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password,
       name,
     });
-    if (data?.user && data.accessToken) {
-      setUser(data.user as User);
+    if (data?.user) {
+      const newUser = data.user as User;
+      setUser(newUser);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(SESSION_KEY, JSON.stringify(newUser));
+        if ((data as any).accessToken) {
+          localStorage.setItem(TOKEN_KEY, (data as any).accessToken);
+          insforge.setAccessToken((data as any).accessToken);
+        }
+      }
     }
     setIsLoading(false);
     return { error };
@@ -84,9 +140,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     setIsLoading(true);
-    await insforge.auth.signOut();
-    setUser(null);
-    setIsLoading(false);
+    try {
+      await insforge.auth.signOut();
+    } catch {
+      // Ignore sign out errors
+    } finally {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem(TOKEN_KEY);
+        insforge.setAccessToken(null);
+      }
+      setUser(null);
+      setIsLoading(false);
+    }
   };
 
   const signInWithOAuth = async (provider: 'google' | 'github') => {

@@ -125,7 +125,7 @@ export default function HistoryPage() {
                     <CardHeader className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800/60">
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-                          
+
                           <span>
                             {new Date(item.created_at).toLocaleDateString()} at{' '}
                             {new Date(item.created_at).toLocaleTimeString([], {
@@ -138,13 +138,12 @@ export default function HistoryPage() {
                         {/* Health Status Badge */}
                         <Badge
                           variant="outline"
-                          className={`text-[10px] px-2 py-0.5 font-bold uppercase ${
-                            health.status === 'good'
+                          className={`text-[10px] px-2 py-0.5 font-bold uppercase ${health.status === 'good'
                               ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400'
                               : health.status === 'warning'
-                              ? 'bg-amber-500/10 border-amber-500/40 text-amber-400'
-                              : 'bg-red-500/10 border-red-500/40 text-red-400'
-                          }`}
+                                ? 'bg-amber-500/10 border-amber-500/40 text-amber-400'
+                                : 'bg-red-500/10 border-red-500/40 text-red-400'
+                            }`}
                         >
                           {health.status === 'good' ? (
                             <ShieldCheck className="w-3 h-3 text-emerald-400 mr-1" />

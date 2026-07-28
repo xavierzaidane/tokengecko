@@ -10,18 +10,21 @@ import {
   flexRender,
   ColumnDef,
 } from '@tanstack/react-table';
-import { Table, ShieldCheck, ArrowUpDown, DollarSign } from 'lucide-react';
+import { Table, ShieldCheck, ArrowUpDown, DollarSign, Award } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ProviderIcon } from '@/components/icons/provider-icons';
 
+import { RegistrySnapshot } from '@/types/analysis';
+
 interface ComparisonMatrixProps {
   results: ModelInspectionResult[];
+  registrySnapshot?: RegistrySnapshot;
 }
 
-export function ComparisonMatrix({ results }: ComparisonMatrixProps) {
+export function ComparisonMatrix({ results, registrySnapshot }: ComparisonMatrixProps) {
   const [sorting, setSorting] = useState<SortingState>([
-    { id: 'estimatedCost', desc: false },
+    { id: 'tradeoffScore', desc: true },
   ]);
 
   const columns: ColumnDef<ModelInspectionResult>[] = [
@@ -73,6 +76,24 @@ export function ComparisonMatrix({ results }: ComparisonMatrixProps) {
           <div className="font-mono text-xs font-bold text-accent-orange flex items-center gap-1">
             <DollarSign className="w-3 h-3 text-accent-orange" />
             <span>${cost.toFixed(5)}</span>
+          </div>
+        );
+      },
+    },
+    {
+      id: 'tradeoffScore',
+      accessorFn: (row) => row.tradeoffScore || 0,
+      header: 'Tradeoff Score',
+      cell: ({ row }) => {
+        const score = row.original.tradeoffScore || 0;
+        const quality = row.original.qualityScores?.general || 80;
+        return (
+          <div className="font-mono text-xs flex items-center gap-2">
+            <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/30 text-[10px]">
+              <Award className="w-3 h-3 mr-1" />
+              {quality}/100
+            </Badge>
+            <span className="text-zinc-300 font-bold">Val: {score}</span>
           </div>
         );
       },
@@ -169,6 +190,24 @@ export function ComparisonMatrix({ results }: ComparisonMatrixProps) {
           </tbody>
         </table>
       </CardContent>
+
+      {registrySnapshot && (
+        <div className="p-3  border-t border-zinc-800 text-[11px] font-mono text-zinc-400 flex flex-wrap items-center justify-between gap-2">
+          <span>
+            Data Source:{' '}
+            <strong className="text-white">
+              {registrySnapshot.source === 'openrouter' ? 'Live OpenRouter Registry' : 'Seed Registry Fallback'}
+            </strong>
+          </span>
+          <span>
+            Snapshot:{' '}
+            <strong className="text-accent-orange">
+              {new Date(registrySnapshot.lastSyncedAt).toLocaleTimeString()}
+            </strong>{' '}
+            ({registrySnapshot.totalModels} models active)
+          </span>
+        </div>
+      )}
     </Card>
   );
 }

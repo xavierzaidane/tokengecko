@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/auth-provider';
@@ -10,10 +10,8 @@ import {
   Key,
   Plus,
   LogOut,
-  ChevronDown,
-  Layers,
   ShieldCheck,
-  Code2,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,6 +30,7 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, logout } = useAuth();
   const { open } = useSidebar();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const isInspector = pathname === '/inspector';
   const isHistory = pathname === '/history';
@@ -54,58 +53,70 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
     },
   ];
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    // Navigate to history or filter if searching
+    router.push(`/history?search=${encodeURIComponent(searchQuery.trim())}`);
+  };
+
   return (
     <>
       {/* Collapsible Icon Rail Sidebar */}
       <aside
-        className={`bg-sidebar border-r border-zinc-800/80 flex flex-col justify-between shrink-0 sticky top-0 h-screen z-30 transition-all duration-300 ease-in-out ${
-          open ? 'w-64 p-4' : 'w-16 p-2.5 items-center'
-        }`}
+        className={`bg-sidebar border-r border-zinc-800/80 flex flex-col justify-between shrink-0 sticky top-0 h-screen z-30 transition-all duration-300 ease-in-out ${open ? 'w-64 p-4' : 'w-16 p-2.5 items-center'
+          }`}
       >
-        <div className={`space-y-5 w-full ${!open ? 'flex flex-col items-center' : ''}`}>
+        <div className={`space-y-4 w-full ${!open ? 'flex flex-col items-center' : ''}`}>
           {/* Logo & Brand Header */}
-          <div className={`flex items-center gap-2.5 px-1 ${!open ? 'justify-center' : ''}`}>
-            <div className="w-8 h-8 bg-accent-orange flex items-center justify-center text-zinc-950 font-bold font-mono text-base shadow-md shadow-accent-orange/20 shrink-0">
-              <Code2 className="w-5 h-5" />
-            </div>
+          <div className={`flex items-center -gap-0 px-0.1 py-1 ${!open ? 'justify-center' : ''}`}>
+            <img
+              src="/imagelogo.png"
+              alt="TokenGecko Logo"
+              className="w-11 h-11 object-contain shrink-0"
+            />
             {open && (
-              <div className="overflow-hidden whitespace-nowrap transition-all duration-200">
-                <span className="font-mono text-2xl font-bold tracking-tight text-white uppercase">
-                  TOKENGECKO
-                </span>
-
+              <div className="overflow-hidden whitespace-nowrap transition-all duration-200 flex items-center">
+                <img
+                  src="/textlogo.png"
+                  alt="TokenGecko Brand"
+                  className="h-8 max-w-[140px] w-auto object-contain shrink-0"
+                />
               </div>
             )}
           </div>
 
-          {/* Workspace Switcher Selector */}
+          {/* Search Bar in Sidebar */}
           {open ? (
-            <div className="p-2.5 bg-card-dark border border-zinc-800 flex items-center justify-between font-mono text-xs cursor-pointer hover:border-zinc-700 transition">
-              <div className="flex items-center gap-2 truncate">
-                <Layers className="w-3.5 h-3.5 text-accent-orange shrink-0" />
-                <div className="truncate">
-                  <div className="text-xs font-bold text-white leading-tight truncate">Main Workspace</div>
-                  <div className="text-[10px] text-zinc-500 leading-tight truncate">v2.4.0 • Production</div>
-                </div>
-              </div>
-              <ChevronDown className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-            </div>
+            <form onSubmit={handleSearchSubmit} className="relative w-full">
+              <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-3 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search analysis..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-card-dark border border-zinc-800 text-white font-mono text-xs pl-8 pr-7 py-2 focus:outline-none focus:border-zinc-700 placeholder:text-zinc-500 transition"
+              />
+              <span className="text-[10px] font-mono text-zinc-500 bg-zinc-900 border border-zinc-800 px-1 py-0.5 rounded absolute right-2 top-2 pointer-events-none">
+                ⌘K
+              </span>
+            </form>
           ) : (
-            <div
-              title="Main Workspace (v2.4.0)"
-              className="w-10 h-10 bg-card-dark border border-zinc-800 flex items-center justify-center cursor-pointer hover:border-zinc-700 transition shrink-0"
+            <button
+              onClick={() => router.push('/history')}
+              title="Search Analyses"
+              className="w-10 h-10 bg-card-dark border border-zinc-800 flex items-center justify-center hover:border-zinc-700 transition shrink-0 rounded-md"
             >
-              <Layers className="w-4 h-4 text-accent-orange" />
-            </div>
+              <Search className="w-4 h-4 text-zinc-400" />
+            </button>
           )}
 
           {/* Primary Action Button (+ Create Prompt) */}
           <Button
             onClick={() => router.push('/inspector')}
             variant="storeframe"
-            className={`font-mono text-xs shadow-md transition-all ${
-              open ? 'w-full justify-center gap-2' : 'w-10 h-10 p-0 justify-center'
-            }`}
+            className={`font-mono text-xs shadow-md transition-all ${open ? 'w-full justify-center gap-2' : 'w-10 h-10 p-0 justify-center'
+              }`}
             title="Create Analysis"
           >
             <Plus className="w-4 h-4 text-zinc-950 shrink-0" />
@@ -128,15 +139,13 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
                       key={item.label}
                       href={item.href}
                       title={item.label}
-                      className={`flex items-center font-mono text-xs transition ${
-                        open
+                      className={`flex items-center font-mono text-xs transition ${open
                           ? 'justify-between px-2.5 py-2'
                           : 'justify-center w-10 h-10 mx-auto rounded-md'
-                      } ${
-                        item.active
+                        } ${item.active
                           ? 'bg-zinc-800/80 text-white font-bold'
                           : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/30'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <Icon className={`w-4 h-4 shrink-0 ${item.active ? 'text-accent-orange' : 'text-zinc-500'}`} />
@@ -181,9 +190,8 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
           ) : (
             <Link
               href="/login"
-              className={`py-2 bg-zinc-800 hover:bg-zinc-700 text-center font-mono text-xs font-bold text-white block transition ${
-                open ? 'w-full' : 'w-10 h-10 p-0 flex items-center justify-center'
-              }`}
+              className={`py-2 bg-zinc-800 hover:bg-zinc-700 text-center font-mono text-xs font-bold text-white block transition ${open ? 'w-full' : 'w-10 h-10 p-0 flex items-center justify-center'
+                }`}
               title="Sign In"
             >
               {open ? 'Sign In' : <LogOut className="w-4 h-4" />}
@@ -193,14 +201,14 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Responsive Workspace Frame */}
-      <SidebarInset>
+      <SidebarInset className="bg-app min-h-screen">
         {/* Top Header Bar with Single Sidebar Trigger */}
-        <header className="h-14 border-b border-zinc-800/80 bg-header-dark/90 backdrop-blur-md px-4 md:px-8 flex items-center justify-between sticky top-0 z-20">
+        <header className="h-14 border-b border-zinc-800/80 bg-sidebar backdrop-blur-md px-4 md:px-8 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-3 font-mono text-xs">
             {/* Single Sidebar Trigger in Top Header */}
             <SidebarTrigger />
 
-            <span className="text-zinc-400 hidden sm:inline">Main Workspace</span>
+            <span className="text-zinc-400 hidden sm:inline">Workspace</span>
             <span className="text-zinc-600 hidden sm:inline">/</span>
             <span className="text-white font-bold capitalize">
               {isInspector ? 'Inspector' : isHistory ? 'History' : isSettings ? 'BYOK Settings' : 'Overview'}
@@ -222,7 +230,7 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
               onClick={() => router.push('/settings')}
               variant="outline"
               size="sm"
-              className="gap-1.5 text-xs border-accent-orange text-accent-orange hover:bg-accent-orange/10"
+              className="gap-1.5 text-xs text-accent-orange "
             >
               <Key className="w-3.5 h-3.5 text-accent-orange" />
               BYOK Keys
@@ -231,7 +239,7 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Dynamic Responsive Content Area */}
-        <main className="flex-1 p-4 md:p-8 max-w-full w-full mx-auto transition-all duration-300">
+        <main className="flex-1 p-4 md:p-8 max-w-full w-full mx-auto transition-all duration-300 bg-app min-h-[calc(100vh-3.5rem)]">
           {children}
         </main>
       </SidebarInset>
