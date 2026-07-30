@@ -1,4 +1,4 @@
-# **TokenGecko** 🦎
+# **TokenGecko** 
 
 > **The High-Performance Prompt Inspection, Cost Optimization, and Token Analytics Workbench.**
 
@@ -6,35 +6,35 @@ TokenGecko is a modern, developer-first IDE workbench designed for prompt engine
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
-### 💻 1. Monaco-Powered Prompt Editor
+### 1. Monaco-Powered Prompt Editor
 - **Full IDE Experience**: Integrated `@monaco-editor/react` with custom `storeframe-dark` syntax highlighting.
 - **Language Auto-Detection**: Supports JSON, Markdown, TypeScript/JavaScript, and Plain Text prompt payloads.
 - **Real-Time Token Counting**: Exact token calculation using `js-tiktoken` with instant character, word, and token telemetry.
 
-### 🎯 2. Target Model Catalog & Cost Benchmarking
+### 2. Target Model Catalog & Cost Benchmarking
 - **Multi-Provider Support**: Benchmark prompts against **OpenAI**, **Anthropic**, **Google Gemini**, **DeepSeek**, **Meta Llama**, **Mistral**, and **Qwen**.
 - **Real-Time Cost Calculations**: Automatic input/output token cost estimation based on live context windows and pricing tiers.
 - **High-Density Catalog Grid**: Filter by model provider, search models, or apply quick multi-model presets (e.g. *Flagship LLMs*, *Budget-Friendly*, *Huge Context*).
 
-### ⚡ 3. Prompt Health & Optimization Engine
+### 3. Prompt Health & Optimization Engine
 - **Automated Linting**: Detects bloated system instructions, duplicate context, repetitive formatting, and unnecessary preamble.
 - **Actionable Advice**: Gives a prompt health score (*Good*, *Warning*, *Needs Optimization*) with direct cost-reduction recommendations.
 - **1-Click Recommendations**: Apply model switching advice or prompt trimming recommendations instantly.
 
-### 📊 4. Multi-Model Comparison Matrix & Visualizations
+### 4. Multi-Model Comparison Matrix & Visualizations
 - **TanStack Table Matrix**: Interactive, sortable comparison table for input tokens, estimated output, context window utilization %, and total cost.
 - **Visual Analytics**: Interactive Recharts breakdown of token distribution by prompt section (System Rules, Context Data, User Instructions).
 
-### 🔒 5. Inspection Vault & Public Sharing
+### 5. Inspection Vault & Public Sharing
 - **History Log Vault**: Persistent saving of prompt inspections to InsForge BaaS database.
 - **Public Share Links**: Generate shareable, read-only inspection reports for client presentations or team code reviews.
 - **BYOK Key Management**: Local client-side key storage for customized model access.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Framework**: [Next.js 15](https://nextjs.org/) (App Router, React 19)
 - **Styling**: Vanilla CSS & [Tailwind CSS 3.4](https://tailwindcss.com/) with Storeframe dark theme tokens
@@ -47,7 +47,7 @@ TokenGecko is a modern, developer-first IDE workbench designed for prompt engine
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 tokengecko/
@@ -107,7 +107,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to start usi
 
 ---
 
-## 📜 Available Scripts
+## Available Scripts
 
 - `npm run dev` - Starts local dev server with Hot Module Replacement
 - `npm run build` - Builds production bundle
@@ -116,6 +116,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to start usi
 
 ---
 
-## 📄 License
+## License
 
-MIT License. Designed with ❤️ for the AI developer community.
+MIT License. For the AI developer community.
