@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Prompt Inspector — Token & Cost Analyzer for LLMs',
+  title: 'TokenGecko - Prompt Inspector',
   description:
     'Developer tool to analyze token usage, input/output cost, and context window utilization side-by-side across GPT-5, Claude, Gemini, DeepSeek, and open-weight LLMs.',
   icons: {

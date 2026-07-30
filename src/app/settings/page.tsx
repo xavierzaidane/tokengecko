@@ -4,12 +4,86 @@ import { useState, useEffect } from 'react';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { SidebarLayout } from '@/components/layout/sidebar-layout';
 import { useAuth } from '@/components/providers/auth-provider';
-import { UserKeyStatus, getUserApiKeys, saveUserApiKey, deleteUserApiKey } from '@/lib/insforge/keys';
-import { Key, ShieldCheck, Lock, Trash2, RefreshCw, Check, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { UserKeyStatus, ProviderType, getUserApiKeys, saveUserApiKey, deleteUserApiKey } from '@/lib/insforge/keys';
+import { Key, Lock, Trash2, RefreshCw, Check, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+
+interface ProviderConfig {
+  id: ProviderType;
+  name: string;
+  logo: string;
+  placeholder: string;
+  description: string;
+}
+
+const PROVIDERS: ProviderConfig[] = [
+  {
+    id: 'openai',
+    name: 'OpenAI',
+    logo: '/OpenAI.png',
+    placeholder: 'sk-proj-...',
+    description: 'Enables exact OpenAI GPT-4o & o3-mini token pricing telemetry',
+  },
+  {
+    id: 'anthropic',
+    name: 'Anthropic',
+    logo: '/Anthropic.svg',
+    placeholder: 'sk-ant-api03-...',
+    description: 'Enables exact Claude messages/count_tokens API calculations',
+  },
+  {
+    id: 'gemini',
+    name: 'Google Gemini',
+    logo: '/GoogleGemini.svg',
+    placeholder: 'AIzaSy...',
+    description: 'Enables exact Gemini 2.0 Flash countTokens() API calculations',
+  },
+  {
+    id: 'deepseek',
+    name: 'DeepSeek',
+    logo: '/DeepSeek.png',
+    placeholder: 'sk-ds-...',
+    description: 'Enables DeepSeek-V3 & R1 token efficiency & cost benchmarking',
+  },
+  {
+    id: 'meta',
+    name: 'Meta Llama / Groq',
+    logo: '/Meta.png',
+    placeholder: 'gsk_...',
+    description: 'Enables Llama 3.3 high-speed inference telemetry & BYOK routing',
+  },
+  {
+    id: 'mistral',
+    name: 'Mistral AI',
+    logo: '/Mistral.png',
+    placeholder: 'sk-ms-...',
+    description: 'Enables Mistral Large & Codestral payload token inspection',
+  },
+  {
+    id: 'cohere',
+    name: 'Cohere',
+    logo: '/Cohere.png',
+    placeholder: 'sk-co-...',
+    description: 'Enables Command R+ & Embed token counting API telemetry',
+  },
+  {
+    id: 'perplexity',
+    name: 'Perplexity AI',
+    logo: '/Perplexity.svg',
+    placeholder: 'pplx-...',
+    description: 'Enables Sonar web reasoning & online search token triage',
+  },
+  {
+    id: 'xai',
+    name: 'xAI (Grok)',
+    logo: '/xAI.svg',
+    placeholder: 'xai-...',
+    description: 'Enables Grok-2 & Grok-3 real-time token performance monitoring',
+  },
+];
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -17,14 +91,10 @@ export default function SettingsPage() {
   const [keys, setKeys] = useState<UserKeyStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [geminiInput, setGeminiInput] = useState('');
-  const [anthropicInput, setAnthropicInput] = useState('');
-
-  const [showGemini, setShowGemini] = useState(false);
-  const [showAnthropic, setShowAnthropic] = useState(false);
-
-  const [isSavingGemini, setIsSavingGemini] = useState(false);
-  const [isSavingAnthropic, setIsSavingAnthropic] = useState(false);
+  // Key input states for each provider
+  const [inputValues, setInputValues] = useState<Record<string, string>>({});
+  const [visibleKeys, setVisibleKeys] = useState<Record<string, boolean>>({});
+  const [savingState, setSavingState] = useState<Record<string, boolean>>({});
 
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -42,246 +112,175 @@ export default function SettingsPage() {
     }
   }, [user]);
 
-  const handleSaveKey = async (provider: 'gemini' | 'anthropic') => {
+  const handleSaveKey = async (providerId: ProviderType, providerName: string) => {
     if (!user) return;
-    const value = provider === 'gemini' ? geminiInput : anthropicInput;
-    if (!value || value.trim().length < 8) {
-      setFeedbackMsg({ type: 'error', text: `Please enter a valid ${provider} API key.` });
+    const value = inputValues[providerId] || '';
+    if (!value || value.trim().length < 6) {
+      setFeedbackMsg({ type: 'error', text: `Please enter a valid ${providerName} API key.` });
       return;
     }
 
-    if (provider === 'gemini') setIsSavingGemini(true);
-    else setIsSavingAnthropic(true);
-
+    setSavingState((prev) => ({ ...prev, [providerId]: true }));
     setFeedbackMsg(null);
 
-    const { success, error } = await saveUserApiKey(user.id, provider, value.trim());
+    const { success, error } = await saveUserApiKey(user.id, providerId, value.trim());
 
-    if (provider === 'gemini') {
-      setIsSavingGemini(false);
-      setGeminiInput('');
-    } else {
-      setIsSavingAnthropic(false);
-      setAnthropicInput('');
-    }
+    setSavingState((prev) => ({ ...prev, [providerId]: false }));
+    setInputValues((prev) => ({ ...prev, [providerId]: '' }));
 
     if (error || !success) {
-      setFeedbackMsg({ type: 'error', text: `Failed to save ${provider} key.` });
+      setFeedbackMsg({ type: 'error', text: `Failed to save ${providerName} key.` });
     } else {
-      setFeedbackMsg({ type: 'success', text: `${provider.toUpperCase()} API key saved & encrypted!` });
+      setFeedbackMsg({ type: 'success', text: `${providerName} API key saved & AES-256 encrypted!` });
       fetchKeys();
     }
   };
 
-  const handleDeleteKey = async (provider: 'gemini' | 'anthropic') => {
+  const handleDeleteKey = async (providerId: ProviderType, providerName: string) => {
     if (!user) return;
     setFeedbackMsg(null);
-    const { success, error } = await deleteUserApiKey(user.id, provider);
+    const { success, error } = await deleteUserApiKey(user.id, providerId);
     if (!success || error) {
-      setFeedbackMsg({ type: 'error', text: `Failed to delete ${provider} key.` });
+      setFeedbackMsg({ type: 'error', text: `Failed to delete ${providerName} key.` });
     } else {
-      setFeedbackMsg({ type: 'success', text: `${provider.toUpperCase()} API key removed.` });
+      setFeedbackMsg({ type: 'success', text: `${providerName} API key removed.` });
       fetchKeys();
     }
   };
-
-  const geminiStatus = keys.find((k) => k.provider === 'gemini');
-  const anthropicStatus = keys.find((k) => k.provider === 'anthropic');
 
   return (
     <AuthGuard>
       <SidebarLayout>
-        <div className="space-y-6 max-w-4xl">
+        <div className="space-y-6 max-w-4xl pb-16">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/80">
             <div>
               <h1 className="text-2xl md:text-3xl font-extrabold font-mono text-white tracking-tight">
-                API Keys & Provider Settings
+                BYOK API Keys & Provider Vault
               </h1>
               <p className="text-xs text-zinc-400 font-mono mt-1">
-                Bring Your Own Keys for Google Gemini and Anthropic to enable exact countTokens API calculations.
+                Bring Your Own Keys across 9 major AI providers for exact token calculations, pricing telemetry, and live routing.
               </p>
             </div>
           </div>
 
           {/* Encryption Info Alert */}
-          <div className="p-4  flex items-start gap-3 shadow-lg">
+          <div className="p-4 bg-card-dark border border-zinc-800 flex items-start gap-3 shadow-lg rounded-xl">
             <Lock className="w-5 h-5 text-accent-orange shrink-0 mt-0.5" />
             <div className="text-xs font-mono space-y-1">
-              <h3 className="font-bold text-white">AES-256-GCM Server-Side Encryption</h3>
+              <h3 className="font-bold text-white">AES-256-GCM Server-Side Vault Encryption</h3>
               <p className="text-zinc-400 leading-relaxed font-sans text-xs">
-                Your API keys are encrypted at rest using AES-256-GCM before storage. Plaintext keys are never returned to the browser client or logged after save. Keys are used strictly for provider token counting calls.
+                Your API keys are encrypted at rest using AES-256-GCM before database storage. Plaintext keys are never logged or exposed back to the client. Keys are decrypted exclusively on server side for real-time provider calls.
               </p>
             </div>
           </div>
 
           {feedbackMsg && (
             <div
-              className={`p-4 font-mono text-xs flex items-center gap-2 border ${feedbackMsg.type === 'success'
+              className={`p-4 font-mono text-xs flex items-center gap-2 border rounded-lg ${
+                feedbackMsg.type === 'success'
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
                   : 'bg-red-500/10 border-red-500/30 text-red-400'
-                }`}
+              }`}
             >
-              {feedbackMsg.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+              {feedbackMsg.type === 'success' ? <Check className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
               {feedbackMsg.text}
             </div>
           )}
 
-          {/* Key Management Form Cards */}
-          <div className="space-y-6 font-mono">
-            {/* 1. Google Gemini Key Card */}
-            <Card className="border-zinc-800 bg-card-dark shadow-xl">
-              <CardHeader className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800/80">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-accent-orange/10 border border-zinc-800 flex items-center justify-center text-accent-orange font-bold text-sm">
-                    G
-                  </div>
-                  <div>
-                    <CardTitle>Google Gemini API Key</CardTitle>
-                    <p className="text-[11px] text-zinc-400 font-sans">
-                      Enables exact Gemini `countTokens()` API calculation
-                    </p>
-                  </div>
-                </div>
+          {/* Key Management Form Grid */}
+          <div className="space-y-4 font-mono">
+            {PROVIDERS.map((provider) => {
+              const status = keys.find((k) => k.provider === provider.id);
+              const isConfigured = status?.isConfigured;
+              const isSaving = savingState[provider.id] || false;
+              const isVisible = visibleKeys[provider.id] || false;
+              const currentInput = inputValues[provider.id] || '';
 
-                {geminiStatus?.isConfigured ? (
-                  <Badge variant="success">Configured ({geminiStatus.maskedKey})</Badge>
-                ) : (
-                  <Badge variant="secondary">Not Configured</Badge>
-                )}
-              </CardHeader>
+              return (
+                <Card key={provider.id} className="border-zinc-800 bg-card-dark shadow-xl overflow-hidden">
+                  <CardHeader className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800/80 bg-white/[0.01]">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-10 h-10 bg-white/5 border border-zinc-700/60 rounded-lg flex items-center justify-center p-2 shrink-0">
+                        <img src={provider.logo} alt={provider.name} className="w-full h-full object-contain" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-base font-bold text-white flex items-center gap-2">
+                          <span>{provider.name}</span>
+                        </CardTitle>
+                        <p className="text-[11px] text-zinc-400 font-sans mt-0.5">
+                          {provider.description}
+                        </p>
+                      </div>
+                    </div>
 
-              <CardContent className="p-4 space-y-3">
-                <label className="block text-xs text-zinc-400">
-                  {geminiStatus?.isConfigured ? 'Rotate Gemini API Key' : 'Enter Gemini API Key (AIzaSy...)'}
-                </label>
-
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  <div className="relative flex-1">
-                    <Input
-                      type={showGemini ? 'text' : 'password'}
-                      value={geminiInput}
-                      onChange={(e) => setGeminiInput(e.target.value)}
-                      placeholder={geminiStatus?.isConfigured ? 'Paste new key to rotate...' : 'AIzaSy...'}
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowGemini(!showGemini)}
-                      className="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-300 transition"
-                    >
-                      {showGemini ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-
-                  <Button
-                    onClick={() => handleSaveKey('gemini')}
-                    disabled={isSavingGemini || !geminiInput}
-                    variant="default"
-                    size="sm"
-                    className="gap-1.5"
-                  >
-                    {isSavingGemini ? (
-                      <span className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
-                    ) : geminiStatus?.isConfigured ? (
-                      <RefreshCw className="w-3.5 h-3.5" />
+                    {isConfigured ? (
+                      <Badge variant="success" className="shrink-0 font-mono text-[11px]">
+                        Configured ({status?.maskedKey})
+                      </Badge>
                     ) : (
-                      <Key className="w-3.5 h-3.5" />
+                      <Badge variant="secondary" className="shrink-0 font-mono text-[11px] text-zinc-400">
+                        Not Configured
+                      </Badge>
                     )}
-                    {geminiStatus?.isConfigured ? 'Rotate Key' : 'Save Key'}
-                  </Button>
+                  </CardHeader>
 
-                  {geminiStatus?.isConfigured && (
-                    <Button
-                      onClick={() => handleDeleteKey('gemini')}
-                      variant="destructive"
-                      size="sm"
-                      className="h-9 w-9 p-0"
-                      title="Delete key"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                  <CardContent className="p-4 space-y-3">
+                    <label className="block text-xs text-zinc-400 font-sans">
+                      {isConfigured ? `Rotate ${provider.name} API Key` : `Enter ${provider.name} API Key (${provider.placeholder})`}
+                    </label>
 
-            {/* 2. Anthropic Key Card */}
-            <Card className="border-zinc-800 bg-card-dark shadow-xl">
-              <CardHeader className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800/80">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-accent-orange/10 border border-zinc-800  flex items-center justify-center text-accent-orange font-bold text-sm">
-                    A
-                  </div>
-                  <div>
-                    <CardTitle>Anthropic API Key</CardTitle>
-                    <p className="text-[11px] text-zinc-400 font-sans">
-                      Enables exact Claude `messages/count_tokens` API calculation
-                    </p>
-                  </div>
-                </div>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          type={isVisible ? 'text' : 'password'}
+                          value={currentInput}
+                          onChange={(e) => setInputValues({ ...inputValues, [provider.id]: e.target.value })}
+                          placeholder={isConfigured ? 'Paste new API key to rotate...' : provider.placeholder}
+                          className="pr-10 bg-black/40 border-zinc-800 text-xs font-mono"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setVisibleKeys({ ...visibleKeys, [provider.id]: !isVisible })}
+                          className="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-300 transition"
+                        >
+                          {isVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
 
-                {anthropicStatus?.isConfigured ? (
-                  <Badge variant="success">Configured ({anthropicStatus.maskedKey})</Badge>
-                ) : (
-                  <Badge variant="secondary">Not Configured</Badge>
-                )}
-              </CardHeader>
+                      <Button
+                        onClick={() => handleSaveKey(provider.id, provider.name)}
+                        disabled={isSaving || !currentInput}
+                        variant="default"
+                        size="sm"
+                        className="gap-1.5 shrink-0 bg-accent-orange text-black font-semibold hover:bg-accent-orange/90"
+                      >
+                        {isSaving ? (
+                          <span className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                        ) : isConfigured ? (
+                          <RefreshCw className="w-3.5 h-3.5" />
+                        ) : (
+                          <Key className="w-3.5 h-3.5" />
+                        )}
+                        {isConfigured ? 'Rotate Key' : 'Save Key'}
+                      </Button>
 
-              <CardContent className="p-4 space-y-3">
-                <label className="block text-xs text-zinc-400">
-                  {anthropicStatus?.isConfigured ? 'Rotate Anthropic API Key' : 'Enter Anthropic API Key (sk-ant-...)'}
-                </label>
-
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  <div className="relative flex-1">
-                    <Input
-                      type={showAnthropic ? 'text' : 'password'}
-                      value={anthropicInput}
-                      onChange={(e) => setAnthropicInput(e.target.value)}
-                      placeholder={anthropicStatus?.isConfigured ? 'Paste new key to rotate...' : 'sk-ant-api03-...'}
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowAnthropic(!showAnthropic)}
-                      className="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-300 transition"
-                    >
-                      {showAnthropic ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-
-                  <Button
-                    onClick={() => handleSaveKey('anthropic')}
-                    disabled={isSavingAnthropic || !anthropicInput}
-                    variant="default"
-                    size="sm"
-                    className="gap-1.5"
-                  >
-                    {isSavingAnthropic ? (
-                      <span className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
-                    ) : anthropicStatus?.isConfigured ? (
-                      <RefreshCw className="w-3.5 h-3.5" />
-                    ) : (
-                      <Key className="w-3.5 h-3.5" />
-                    )}
-                    {anthropicStatus?.isConfigured ? 'Rotate Key' : 'Save Key'}
-                  </Button>
-
-                  {anthropicStatus?.isConfigured && (
-                    <Button
-                      onClick={() => handleDeleteKey('anthropic')}
-                      variant="destructive"
-                      size="sm"
-                      className="h-9 w-9 p-0"
-                      title="Delete key"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                      {isConfigured && (
+                        <Button
+                          onClick={() => handleDeleteKey(provider.id, provider.name)}
+                          variant="destructive"
+                          size="sm"
+                          className="h-9 w-9 p-0 shrink-0"
+                          title={`Delete ${provider.name} Key`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </SidebarLayout>

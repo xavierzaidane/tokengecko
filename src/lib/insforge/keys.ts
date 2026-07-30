@@ -1,9 +1,20 @@
 import { insforge } from './client';
 import { encryptKey, decryptKey, maskApiKey } from '@/lib/security/encryption';
 
+export type ProviderType =
+  | 'openai'
+  | 'gemini'
+  | 'anthropic'
+  | 'deepseek'
+  | 'meta'
+  | 'mistral'
+  | 'cohere'
+  | 'perplexity'
+  | 'xai';
+
 export interface UserKeyStatus {
   id?: string;
-  provider: 'gemini' | 'anthropic';
+  provider: ProviderType;
   isConfigured: boolean;
   maskedKey?: string;
   created_at?: string;
@@ -12,7 +23,7 @@ export interface UserKeyStatus {
 
 export async function saveUserApiKey(
   userId: string,
-  provider: 'gemini' | 'anthropic',
+  provider: ProviderType,
   apiKey: string
 ): Promise<{ success: boolean; maskedKey?: string; error?: any }> {
   try {
@@ -58,7 +69,17 @@ export async function getUserApiKeys(userId: string): Promise<{ keys: UserKeySta
       return { keys: [], error };
     }
 
-    const providers: ('gemini' | 'anthropic')[] = ['gemini', 'anthropic'];
+    const providers: ProviderType[] = [
+      'openai',
+      'gemini',
+      'anthropic',
+      'deepseek',
+      'meta',
+      'mistral',
+      'cohere',
+      'perplexity',
+      'xai',
+    ];
     const result: UserKeyStatus[] = providers.map((prov) => {
       const match = (data || []).find((row: any) => row.provider === prov);
       if (match) {
@@ -91,7 +112,7 @@ export async function getUserApiKeys(userId: string): Promise<{ keys: UserKeySta
 
 export async function getDecryptedUserApiKey(
   userId: string,
-  provider: 'gemini' | 'anthropic'
+  provider: ProviderType
 ): Promise<string | null> {
   try {
     const { data } = await insforge.database
@@ -112,7 +133,7 @@ export async function getDecryptedUserApiKey(
 
 export async function deleteUserApiKey(
   userId: string,
-  provider: 'gemini' | 'anthropic'
+  provider: ProviderType
 ): Promise<{ success: boolean; error?: any }> {
   try {
     const { error } = await insforge.database
