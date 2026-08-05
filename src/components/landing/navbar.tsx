@@ -7,6 +7,14 @@ import { Menu } from 'lucide-react';
 import { ActionButton } from './shared-primitives';
 
 export function LandingNavbar() {
+  const navItems = [
+    { label: 'Inspector', href: '/inspector', isRoute: true },
+    { label: 'Features', href: '#features', isRoute: false },
+    { label: 'Pricing', href: '#pricing', isRoute: false },
+    { label: 'Models', href: '#models', isRoute: false },
+    { label: 'Documentation', href: '/docs', isRoute: true },
+  ];
+
   return (
     <motion.nav
       initial={{ opacity: 0, y: -10 }}
@@ -20,18 +28,34 @@ export function LandingNavbar() {
       </Link>
 
       <div className="hidden md:flex items-center gap-8 font-mono text-xs">
-        {['Inspector', 'Features', 'Pricing', 'Models', 'Documentation'].map((link, i) => (
-          <motion.a
-            key={link}
-            href={`#${link.toLowerCase()}`}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + i * 0.05, duration: 0.4 }}
-            className="text-white/70 hover:text-white transition-colors"
-          >
-            {link}
-          </motion.a>
-        ))}
+        {navItems.map((item, i) =>
+          item.isRoute ? (
+            <motion.div
+              key={item.label}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + i * 0.05, duration: 0.4 }}
+            >
+              <Link
+                href={item.href}
+                className="text-white/70 hover:text-white transition-colors"
+              >
+                {item.label}
+              </Link>
+            </motion.div>
+          ) : (
+            <motion.a
+              key={item.label}
+              href={item.href}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + i * 0.05, duration: 0.4 }}
+              className="text-white/70 hover:text-white transition-colors"
+            >
+              {item.label}
+            </motion.a>
+          )
+        )}
       </div>
 
       <div className="hidden md:flex items-center gap-4">

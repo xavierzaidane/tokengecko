@@ -12,6 +12,7 @@ import {
   LogOut,
   ShieldCheck,
   Search,
+  BookOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -49,6 +50,12 @@ function SidebarContent({ children }: { children: React.ReactNode }) {
       items: [
         { label: 'BYOK API Keys', href: '/settings', icon: Key, active: isSettings },
         { label: 'Encryption Vault', href: '/settings', icon: ShieldCheck, active: false },
+      ],
+    },
+    {
+      group: 'RESOURCES',
+      items: [
+        { label: 'Documentation', href: '/docs', icon: BookOpen, active: pathname.startsWith('/docs') },
       ],
     },
   ];

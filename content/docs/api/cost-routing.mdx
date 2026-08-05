@@ -1,0 +1,30 @@
+---
+title: "Cost & Routing API"
+description: "Programmatic cost calculation and intelligent model selection routing algorithms."
+---
+
+# Cost & Routing API
+
+The **Cost & Routing API** calculates estimated costs and selects optimal target models based on payload size, budget constraints, and latency targets.
+
+## Routing Engine Example
+
+```typescript
+import { CostRouter } from '@tokengecko/core';
+
+const router = new CostRouter();
+
+// Select optimal model under a $0.005 budget threshold
+const recommendation = router.selectOptimalModel({
+  promptTokens: 12500,
+  maxOutputTokens: 1000,
+  maxBudgetUsd: 0.005,
+  preferredProviders: ['openai', 'anthropic', 'deepseek'],
+});
+
+console.log(recommendation.recommendedModel); // 'deepseek-v3'
+console.log(recommendation.estimatedCost);     // $0.00203
+```
+
+> [!NOTE]
+> Advanced dynamic cost routing middleware endpoints are under active development.

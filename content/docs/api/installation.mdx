@@ -1,0 +1,39 @@
+---
+title: "Installation"
+description: "How to install and integrate the @tokengecko/core SDK package into your TypeScript and Node.js projects."
+---
+
+# Package Installation
+
+TokenGecko provides an installable core package `@tokengecko/core` for programmatic token parsing, cost estimation, and model registry lookups.
+
+## Installing via Package Managers
+
+Install via npm, pnpm, yarn, or bun:
+
+<PackageTabs cmd="@tokengecko/core" />
+
+## Basic Usage
+
+Import the SDK and instantiate the token analyzer:
+
+```typescript
+import { TokenGecko } from '@tokengecko/core';
+
+const gecko = new TokenGecko({
+  defaultModels: ['gpt-4o', 'claude-3-5-sonnet'],
+});
+
+const result = await gecko.analyzePrompt({
+  prompt: 'Summarize the attached quarterly earnings report...',
+});
+
+console.log(`Token count: ${result.tokens}`);
+console.log(`Est cost: $${result.estimatedCost}`);
+```
+
+## Requirements
+
+- **Node.js**: v18.0.0 or higher
+- **TypeScript**: v5.0+ (if using TS)
+- **Browser Compatibility**: All modern evergreen browsers (Chrome, Firefox, Safari, Edge)

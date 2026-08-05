@@ -1,0 +1,47 @@
+---
+title: "Bringing Your Own Key (BYOK)"
+description: "How TokenGecko handles zero-trust, client-side API key storage for live model benchmarking and execution."
+---
+
+# Bringing Your Own Key (BYOK)
+
+TokenGecko follows a **strict client-side BYOK architecture**. You can plug in your own API keys for OpenAI, Anthropic, Google Gemini, OpenRouter, or DeepSeek to execute live model queries directly from your browser.
+
+## Security & Storage Architecture
+
+> [!IMPORTANT]
+> Your API keys are **never uploaded to or stored on TokenGecko servers**.
+
+- **Encryption**: Keys are encrypted locally using AES-GCM before persisting in `localStorage` or `sessionStorage`.
+- **Direct Requests**: When you execute a live benchmark, requests are dispatched directly from your browser to the provider's API endpoint (e.g. `https://api.openai.com/v1/chat/completions`).
+- **Zero Telemetry**: Key strings never pass through intermediate backend proxies or logging middleware.
+
+## Configured Providers
+
+TokenGecko supports BYOK credentials for the following provider services:
+
+1. **OpenAI**: `sk-proj-...`
+2. **Anthropic**: `sk-ant-api...`
+3. **Google Gemini**: `AIzaSy...`
+4. **DeepSeek**: `sk-...`
+5. **OpenRouter**: `sk-or-v1-...`
+
+## Managing Your Keys
+
+To configure API keys:
+
+1. Click **BYOK Settings** in the top navigation bar or go to `/settings`.
+2. Input key values into the encrypted input fields.
+3. Toggle **Persist to Local Storage** if you want keys to remain saved across browser sessions.
+4. Click **Clear Vault** at any time to purge all stored keys immediately.
+
+```typescript
+// Client-side key retrieval example
+import { getKeyVault } from '@/lib/insforge/keys';
+
+const openAiKey = getKeyVault('openai');
+// Retreived purely in browser memory
+```
+
+> [!CAUTION]
+> Avoid exposing API keys in public code repositories or sharing screenshots of your settings page.

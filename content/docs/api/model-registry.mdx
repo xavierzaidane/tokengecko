@@ -1,0 +1,29 @@
+---
+title: "Model Registry API"
+description: "Querying, filtering, and extending the dynamic model registry programmatic metadata API."
+---
+
+# Model Registry API
+
+The **Model Registry** module provides programmatic access to TokenGecko's canonical registry of LLM metadata, token limits, and pricing structures.
+
+## Fetching Model Metadata
+
+```typescript
+import { ModelRegistry } from '@tokengecko/core';
+
+// Get spec for a specific model
+const modelSpec = ModelRegistry.getModel('claude-3-5-sonnet');
+console.log(modelSpec.contextLimit); // 200000
+
+// List all models by provider
+const openAiModels = ModelRegistry.getModelsByProvider('openai');
+
+// Filter models by context capacity minimum
+const largeContextModels = ModelRegistry.filter({
+  minContextLimit: 128000,
+});
+```
+
+> [!NOTE]
+> Detailed API reference for registry sync hooks is coming soon in the v1.2 SDK release.

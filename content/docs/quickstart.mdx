@@ -1,0 +1,58 @@
+---
+title: "Quickstart"
+description: "Get up and running with TokenGecko in under 5 minutes. Learn how to inspect prompts, compare models, and set up your BYOK credentials."
+---
+
+# TokenGecko Quickstart Guide
+
+This guide will walk you through analyzing your first LLM prompt payload, inspecting token distribution, and setting up your workspace.
+
+## Step 1: Launch the Inspector
+
+Navigate to the [Inspector Workspace](/inspector) from the main menu or click **Launch Inspector** in the top navigation.
+
+The Inspector features a split-pane layout:
+- **Left Pane**: Prompt Input area (System Prompt, User Prompt, and JSON Payload editor).
+- **Right Pane**: Token Breakdown, Model Comparison Matrix, and Context Utilization Gauge.
+
+## Step 2: Input Your Prompt Payload
+
+Enter your prompt into the editor. You can provide both system instructions and user queries:
+
+```json
+{
+  "system": "You are a senior TypeScript architect. Optimize code for zero-allocation performance.",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Write a high-performance LRU cache implementation with a fixed memory buffer."
+    }
+  ]
+}
+```
+
+As you type, TokenGecko performs **real-time tiktoken BPE parsing** in the browser, showing instant token counts without sending data to an external server.
+
+## Step 3: Select Target Models
+
+Use the Model Selector dropdown to choose up to 4 models for side-by-side comparison:
+- **OpenAI**: `gpt-4o`, `gpt-4o-mini`, `o1-preview`
+- **Anthropic**: `claude-3-5-sonnet`, `claude-3-5-haiku`
+- **Google**: `gemini-1.5-pro`, `gemini-1.5-flash`
+- **Open-Weight**: `deepseek-v3`, `llama-3.3-70b`
+
+## Step 4: Analyze Context & Cost Output
+
+TokenGecko dynamically calculates:
+1. **Token Count**: Total input tokens based on provider-specific tokenizers.
+2. **Context Window Fill %**: Visual progress bar showing payload size relative to maximum context (e.g. 128k, 200k, 2M).
+3. **Estimated Run Cost**: Estimated input and output cost based on current provider rates per million tokens.
+
+> [!TIP]
+> **Pro Tip**: Configure your personal API keys in [BYOK Settings](/docs/byok) to execute live test runs directly from the Inspector!
+
+## Next Steps
+
+- Learn more about [The Inspector](/docs/inspector) features.
+- Configure your [Bring Your Own Key (BYOK)](/docs/byok) storage.
+- Explore the [Supported Models](/docs/supported-models) reference table.

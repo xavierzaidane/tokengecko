@@ -1,0 +1,54 @@
+---
+title: "Configuration"
+description: "SDK configuration options, custom pricing tables, and custom tokenizer setup."
+---
+
+# Package Configuration
+
+Customize `@tokengecko/core` behavior using configuration options upon initialization.
+
+## Configuration Options
+
+```typescript
+import { TokenGeckoConfig } from '@tokengecko/core';
+
+const config: TokenGeckoConfig = {
+  // Provider API keys (optional, for live runs)
+  keys: {
+    openai: process.env.OPENAI_API_KEY,
+    anthropic: process.env.ANTHROPIC_API_KEY,
+  },
+  
+  // Custom pricing overrides (price per 1M tokens)
+  customPricing: {
+    'custom-finetune-v1': {
+      inputPricePerM: 0.50,
+      outputPricePerM: 1.50,
+      contextLimit: 32768,
+    },
+  },
+  
+  // Cache options
+  cache: {
+    enabled: true,
+    ttlMs: 3600000, // 1 hour
+  },
+};
+```
+
+## Overriding Default Model Specs
+
+You can dynamic register or override model parameters at runtime:
+
+```typescript
+gecko.registerModel({
+  id: 'llama-3-custom',
+  name: 'Llama 3 Fine-Tuned 8B',
+  provider: 'meta',
+  contextLimit: 8192,
+  pricing: {
+    inputPricePerM: 0.10,
+    outputPricePerM: 0.20,
+  },
+});
+```

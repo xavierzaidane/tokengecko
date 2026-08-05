@@ -1,0 +1,59 @@
+---
+title: "The Inspector"
+description: "In-depth guide to TokenGecko's core Prompt Inspector workspace: token distribution, context capacity charts, and payload optimization."
+---
+
+# The Inspector Workspace
+
+The **Inspector** is TokenGecko's primary developer workspace. It enables developers to inspect, tokenize, and optimize complex prompt payloads across multiple LLMs simultaneously.
+
+## Workspace Layout Overview
+
+The Inspector interface is divided into three primary zones:
+
+1. **Input & Payload Editor**: Supports markdown, raw text, and structured JSON payloads.
+2. **Model Leaderboard & Comparison**: Displays side-by-side tokenization stats across selected models.
+3. **Context Utilization & Cost Gauges**: Visual charts detailing context window capacity and financial metrics.
+
+## Key Features
+
+### 1. Multi-Provider Tokenization
+
+Different model providers use distinct tokenization algorithms:
+- **OpenAI (`o200k_base` / `cl100k_base`)**: Tiktoken-based BPE encoding.
+- **Anthropic**: Claude token estimators accounting for special system framing tokens.
+- **Gemini**: SentencePiece-derived tokenization with multi-modal payload support.
+
+TokenGecko highlights how the same prompt payload converts into different token lengths across providers.
+
+### 2. Context Capacity Radial Gauges
+
+Visualize how much of a model's total context capacity your prompt consumes:
+- `gpt-4o`: **128,000 tokens**
+- `claude-3-5-sonnet`: **200,000 tokens**
+- `gemini-1.5-pro`: **2,000,000 tokens**
+
+```text
+[=== Context Window Utilization ===]
+GPT-4o:          [████░░░░░░░░░░░░░░░░] 22.4% (28,672 / 128,000)
+Claude 3.5:      [███░░░░░░░░░░░░░░░░░] 14.3% (28,672 / 200,000)
+Gemini 1.5 Pro:  [█░░░░░░░░░░░░░░░░░░░]  1.4% (28,672 / 2,000,000)
+```
+
+### 3. Cost & Latency Estimation
+
+TokenGecko applies up-to-date model pricing metadata to estimate cost per 1k requests:
+
+| Model | Input Price / 1M | Output Price / 1M | Est. 10k Runs |
+| :--- | :--- | :--- | :--- |
+| `gpt-4o-mini` | $0.15 | $0.60 | $3.45 |
+| `claude-3-5-haiku` | $0.80 | $4.00 | $18.20 |
+| `claude-3-5-sonnet` | $3.00 | $15.00 | $68.50 |
+| `deepseek-v3` | $0.14 | $0.28 | $2.80 |
+
+> [!NOTE]
+> All token calculations occur client-side in real-time as you modify text in the editor.
+
+## Exporting & Saving Runs
+
+You can save any prompt inspection run to your [Analysis History](/docs/history-sharing) or generate a public share link to collaborate with your team.

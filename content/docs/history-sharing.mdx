@@ -1,0 +1,33 @@
+---
+title: "History & Sharing"
+description: "Managing prompt analysis history, saving inspection snapshots, and sharing public reports with team members."
+---
+
+# History & Sharing
+
+TokenGecko provides built-in prompt history tracking and shareable URL generation so you can save, search, and audit your prompt engineering runs over time.
+
+## Analysis History
+
+When logged in, your prompt inspection runs are automatically persisted to your account history:
+
+- **Saved Attributes**: Prompt text, target models, token breakdown, cost estimates, and timestamp.
+- **Search & Filter**: Search past runs by keyword, model tag, or date range in `/history`.
+- **Replay & Fork**: Re-open any historical run in the Inspector to modify parameters or re-benchmark.
+
+## Generating Shareable Snapshots
+
+Need to share a token audit or model comparison with teammates or stakeholders?
+
+1. Open any run in the Inspector or History page.
+2. Click **Share Snapshot** in the top action bar.
+3. TokenGecko generates a lightweight, public permalink (`/share/[id]`).
+
+```text
+Shareable URL: https://tokengecko.app/share/sn_94f81a20b
+```
+
+Shared reports render an interactive preview of token counts, context gauges, and cost metrics without requiring recipient login.
+
+> [!NOTE]
+> Sensitive API keys stored in your BYOK vault are **never** included in shared snapshots.

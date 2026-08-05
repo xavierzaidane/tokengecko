@@ -1,0 +1,39 @@
+---
+title: "Supported Models"
+description: "Reference directory of all supported LLM models, provider tokenizers, context limits, and pricing rates."
+---
+
+# Supported Models & Specs Reference
+
+TokenGecko maintains an active registry of flagship and open-weight models across all major AI labs.
+
+## Flagship & Closed Models
+
+| Provider | Model Name | Model ID | Context Limit | Input Price / 1M | Output Price / 1M |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **OpenAI** | GPT-4o | `gpt-4o` | 128,000 | $2.50 | $10.00 |
+| **OpenAI** | GPT-4o Mini | `gpt-4o-mini` | 128,000 | $0.15 | $0.60 |
+| **OpenAI** | o1 | `o1` | 200,000 | $15.00 | $60.00 |
+| **Anthropic** | Claude 3.5 Sonnet | `claude-3-5-sonnet` | 200,000 | $3.00 | $15.00 |
+| **Anthropic** | Claude 3.5 Haiku | `claude-3-5-haiku` | 200,000 | $0.80 | $4.00 |
+| **Google** | Gemini 1.5 Pro | `gemini-1.5-pro` | 2,000,000 | $1.25 | $5.00 |
+| **Google** | Gemini 1.5 Flash | `gemini-1.5-flash` | 1,000,000 | $0.075 | $0.30 |
+
+## Open-Weight & Specialized Models
+
+| Provider | Model Name | Model ID | Context Limit | Input Price / 1M | Output Price / 1M |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **DeepSeek** | DeepSeek V3 | `deepseek-v3` | 64,000 | $0.14 | $0.28 |
+| **DeepSeek** | DeepSeek R1 | `deepseek-r1` | 64,000 | $0.55 | $2.19 |
+| **Meta** | Llama 3.3 70B | `llama-3.3-70b` | 128,000 | $0.30 | $0.60 |
+| **Mistral** | Mistral Large 2 | `mistral-large-2` | 128,000 | $2.00 | $6.00 |
+
+## Tokenizer Mapping
+
+- **OpenAI Models**: `o200k_base` BPE (Tiktoken)
+- **Anthropic Models**: Claude BPE vocabulary tokenizer
+- **Google Gemini Models**: SentencePiece multi-lingual tokenizer
+- **Llama 3 / DeepSeek**: Llama 3 128k BPE vocabulary tokenizer
+
+> [!NOTE]
+> Pricing metadata is updated automatically via TokenGecko's dynamic model registry.

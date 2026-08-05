@@ -1,0 +1,48 @@
+---
+title: "Overview"
+description: "Welcome to the TokenGecko documentation. Learn how to analyze token payloads, context utilization, and costs across OpenAI, Anthropic, Gemini, and open models."
+---
+
+# Introduction to TokenGecko
+
+TokenGecko is a developer workbench engineered to inspect, tokenize, benchmark, and optimize LLM prompt payloads across all major model providers in real time.
+
+Whether you are building complex multi-turn agent pipelines, optimizing RAG context windows, or auditing token consumption costs, TokenGecko provides granular insights before you execute requests against production APIs.
+
+## Core Capabilities
+
+- **Real-Time Tokenization**: Exact Byte-Pair Encoding (BPE) parsing using Tiktoken and custom tokenizers.
+- **Provider Multi-Benchmarking**: Compare token counts, context window fill %, and estimated input/output costs side-by-side.
+- **BYOK (Bring Your Own Key)**: Secure client-side API key vault with zero server-side storage of sensitive credentials.
+- **Prompt Payload Analysis**: Inspect structured prompt components (system instructions, user turns, function schemas).
+
+## Architecture Overview
+
+TokenGecko runs natively in the browser with minimal backend overhead:
+
+```typescript
+import { TokenGeckoInspector } from '@tokengecko/core';
+
+const inspector = new TokenGeckoInspector({
+  models: ['gpt-4o', 'claude-3-5-sonnet', 'gemini-1.5-pro'],
+});
+
+const analysis = await inspector.analyze({
+  systemPrompt: 'You are an expert software engineer...',
+  userPrompt: 'Refactor this database query for optimal index usage.',
+});
+
+console.log(analysis.tokenCounts);
+```
+
+### Key Feature Matrix
+
+| Feature | Description | Support |
+| :--- | :--- | :--- |
+| **Tiktoken BPE** | Native OpenAI tokenizer parsing | Full |
+| **Anthropic Context** | Claude 3.5 Sonnet context fill calculator | Full |
+| **Gemini 1.5 Pro** | 2M token context window visualizer | Full |
+| **Cost Estimator** | Input/Output token cost tables | Full |
+
+> [!TIP]
+> Use keyboard shortcut `Cmd + K` or `Ctrl + K` anywhere on the site to quickly search documentation pages.

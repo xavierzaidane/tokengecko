@@ -1,0 +1,39 @@
+---
+title: "Comparing Models"
+description: "How to run multi-model comparison matrixes, analyze token variations, and evaluate cost trade-offs."
+---
+
+# Comparing Models Side-by-Side
+
+TokenGecko allows you to compare prompt payload behavior across up to 4 models simultaneously in a unified matrix view.
+
+## Why Compare Models?
+
+Each LLM provider structures context, tokenization, and pricing differently:
+- **Tokenizer Efficiency**: The exact same English or code snippet can result in up to 25% fewer tokens on `o200k_base` (GPT-4o) compared to older tokenizers.
+- **Cost Scaling**: Small prompt payload increases can create massive financial divergence when running high-volume batch calls.
+- **Context Boundaries**: Visualizing context window fill ensures your RAG payload doesn't truncate key instructions on models with smaller windows.
+
+## Running a Comparison
+
+1. In [The Inspector](/inspector), click **Add Model Comparison**.
+2. Check up to 4 models from the selection panel.
+3. Observe real-time metric updates:
+   - Total Tokens
+   - Context Fill %
+   - Estimated Input Cost
+   - Estimated Output Cost (based on target generation length)
+
+```text
+Prompt Payload: 14,250 raw characters
+
+Model               Tokens     Context Fill %   Est. Input Cost
+---------------------------------------------------------------
+GPT-4o              3,412      2.67%            $0.0085
+Claude 3.5 Sonnet   3,580      1.79%            $0.0107
+Gemini 1.5 Flash    3,490      0.35%            $0.0002
+DeepSeek V3         3,425      5.35%            $0.0004
+```
+
+> [!TIP]
+> Use the **Optimization Engine** to automatically suggest prompt refactorings that reduce token count while preserving semantic intent.

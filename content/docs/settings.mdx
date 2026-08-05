@@ -1,0 +1,28 @@
+---
+title: "Settings"
+description: "Configure workspace settings, default comparison models, tokenizer preferences, and local storage rules."
+---
+
+# Settings & Workspace Configuration
+
+The **Settings** page (`/settings`) allows you to customize TokenGecko to fit your default workflow.
+
+## Workspace Preferences
+
+### 1. Default Comparison Set
+Set your preferred default models whenever you open a new Inspector session:
+- **Default Primary Model**: `gpt-4o`
+- **Default Secondary Models**: `claude-3-5-sonnet`, `gemini-1.5-flash`
+
+### 2. Tokenizer Encoding Mode
+Select default tokenizer behavior:
+- **Exact BPE Parsing**: High precision, client-side WASM/JavaScript tokenizer.
+- **Fast Estimation**: Heuristic-based fast approximation for ultra-large multi-megabyte payloads.
+
+### 3. Account & Storage Management
+- **Local Storage Persist**: Toggle automatic caching of active editor drafts.
+- **Clear Workspace Cache**: Reset cached model registry metadata and clear prompt drafts.
+- **Vault Wipe**: One-click purge of all client-side encrypted BYOK API keys.
+
+> [!TIP]
+> Access BYOK API key management directly under the **BYOK Keys** tab in Settings.

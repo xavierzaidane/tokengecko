@@ -1,0 +1,26 @@
+---
+title: "Glossary"
+description: "Reference guide for key terms in LLM tokenization, context windows, pricing metrics, and prompt engineering."
+---
+
+# TokenGecko Glossary
+
+Key terms and definitions used across TokenGecko and the broader LLM ecosystem:
+
+### BPE (Byte-Pair Encoding)
+A subword tokenization algorithm used by models like GPT-4o (`o200k_base`) to convert raw text strings into numerical token IDs.
+
+### BYOK (Bring Your Own Key)
+A zero-trust client-side architectural pattern where users supply their own API keys stored only in local browser memory.
+
+### Context Window
+The maximum number of total tokens (system prompt + user input + conversation history + output generation) a model can process in a single request session.
+
+### TTFT (Time To First Token)
+The latency duration measured from when an API request is sent until the first token response stream is received back from the provider.
+
+### Token
+The basic atomic chunk of text processed by an LLM. On average, 1 token is roughly equivalent to 4 characters or 0.75 words in English.
+
+### Tokenizer
+The underlying encoding library or vocabulary table used to transform text payloads into token arrays (e.g. Tiktoken, SentencePiece, HuggingFace Fast Tokenizers).
