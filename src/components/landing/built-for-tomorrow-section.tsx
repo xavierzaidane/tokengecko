@@ -55,27 +55,18 @@ export function BuiltForTomorrowSection() {
             }}
           />
 
-          {/* Architectural Blueprint Guidelines (Circles & Diagonal Lines) */}
-          <svg className="absolute inset-0 w-full h-full text-white/20 pointer-events-none" viewBox="0 0 400 300" fill="none">
-            <line x1="0" y1="0" x2="400" y2="300" stroke="currentColor" strokeWidth="0.5" strokeDasharray="4 4" />
-            <line x1="400" y1="0" x2="0" y2="300" stroke="currentColor" strokeWidth="0.5" strokeDasharray="4 4" />
-            <line x1="0" y1="150" x2="400" y2="150" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 2" />
-            <line x1="200" y1="0" x2="200" y2="300" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 2" />
-            <circle cx="200" cy="150" r="85" stroke="currentColor" strokeWidth="0.5" />
-            <circle cx="200" cy="150" r="125" stroke="currentColor" strokeWidth="0.5" strokeDasharray="3 3" />
-          </svg>
 
           {/* Centered Brand Logo (Image Logo Mark + Text Logo) */}
           <div className="relative z-10 flex items-center gap-3 sm:gap-4 px-6 py-4">
             <img
               src="/imagelogo.png"
               alt="TokenGecko Mark"
-              className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+              className="w-10 h-10 sm:w-20 sm:h-20 object-contain"
             />
             <img
               src="/textlogo.png"
               alt="TokenGecko Logotype"
-              className="h-7 sm:h-9 w-auto object-contain"
+              className="h-12 sm:h-14 w-auto object-contain"
             />
           </div>
         </div>

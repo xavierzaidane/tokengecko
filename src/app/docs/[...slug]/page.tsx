@@ -9,6 +9,7 @@ import { getAllDocsSlugs, getAdjacentPages, flattenNav } from '@/lib/docs-nav';
 import { mdxComponents } from '@/components/docs/mdx-components';
 import { PackageTabs } from '@/components/docs/package-tabs';
 import { DocsToc } from '@/components/docs/docs-toc';
+import { ChangelogTimeline } from '@/components/changelog/changelog-timeline';
 import { ArrowLeft, ArrowRight, ChevronRight } from 'lucide-react';
 
 interface DocsPageProps {
@@ -105,9 +106,15 @@ export default async function DocsPage({ params }: DocsPageProps) {
         </header>
 
         {/* Page Content Body */}
-        <div className="prose prose-invert max-w-none prose-headings:font-normal prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:pb-2 prose-h2:border-b prose-h2:border-zinc-800/60 prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3 prose-p:text-zinc-300 prose-p:leading-relaxed prose-p:mb-4 prose-ul:my-4 prose-ul:list-disc prose-ol:my-4 prose-ol:list-decimal prose-li:my-1 prose-table:my-6">
-          {content}
-        </div>
+        {slug === 'changelog' ? (
+          <div className="mt-4">
+            <ChangelogTimeline />
+          </div>
+        ) : (
+          <div className="prose prose-invert max-w-none prose-headings:font-normal prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:pb-2 prose-h2:border-b prose-h2:border-zinc-800/60 prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3 prose-p:text-zinc-300 prose-p:leading-relaxed prose-p:mb-4 prose-ul:my-4 prose-ul:list-disc prose-ol:my-4 prose-ol:list-decimal prose-li:my-1 prose-table:my-6">
+            {content}
+          </div>
+        )}
 
         {/* Prev / Next Bottom Navigation */}
         <nav className="mt-14 pt-6 border-t border-zinc-800/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">

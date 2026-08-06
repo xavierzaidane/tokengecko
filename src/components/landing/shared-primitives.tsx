@@ -20,7 +20,7 @@ export function ActionButton({
       className={`group inline-flex items-center justify-center gap-2 font-medium text-sm px-6 py-3 transition-all active:scale-[0.98] cursor-pointer ${
         primary
           ? 'bg-white text-black hover:bg-white/90 shadow-lg shadow-white/10'
-          : 'bg-white/10 text-white border border-white/15 hover:bg-white/20 backdrop-blur-md'
+          : 'bg-app text-white border border-zinc-800 hover:bg-white/20 backdrop-blur-md'
       } ${full ? 'w-full' : ''}`}
     >
       <span>{label}</span>

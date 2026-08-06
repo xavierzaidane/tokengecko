@@ -43,8 +43,8 @@ export function DocsToc({ headings }: DocsTocProps) {
   }
 
   return (
-    <div className="hidden xl:block w-56 shrink-0 pl-6 border-l border-zinc-800/60 sticky top-24 self-start max-h-[calc(100vh-7rem)] overflow-y-auto py-2 text-xs font-mono">
-      <div className="font-semibold text-zinc-400 uppercase tracking-wider mb-3 text-[11px]">
+    <div className="hidden xl:block w-56 shrink-0 pl-6 border-l border-zinc-800/60 sticky top-24 self-start max-h-[calc(100vh-7rem)] overflow-y-auto py-2 text-xs font-normal">
+      <div className="font-semibold text-zinc-400 mb-3 text-sm">
         On this page
       </div>
       <ul className="space-y-2.5">

@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { ActionButton } from './shared-primitives';
+import { InstallCmdBar } from './install-cmd-bar';
 
 export function HeroSection() {
   return (
@@ -32,8 +33,17 @@ export function HeroSection() {
         transition={{ delay: 0.6, duration: 0.6 }}
         className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4"
       >
-        <ActionButton label="Launch Inspector" href="/login" />
-        <ActionButton label="Sign In" href="/login" primary={false} />
+        <ActionButton label="Get started ↗" href="/inspector" />
+        <ActionButton label="Explore features" href="#features" primary={false} />
+      </motion.div>
+
+      {/* Package Install Snippet Bar matching requested screenshot */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7, duration: 0.6 }}
+      >
+        <InstallCmdBar />
       </motion.div>
 
       <motion.p

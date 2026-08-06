@@ -37,7 +37,7 @@ export function PlaygroundCtaSection() {
 
 
       {/* Playground Feature Block */}
-      <section className="max-w-[1343px] mx-auto px-4 md:px-8 py-16 md:py-24 relative top-12 z-10">
+      <section className="max-w-[1343px] mx-auto px-4 md:px-8 py-16 md:py-24 relative top-10 z-10">
         <div className="w-full  grid md:grid-cols-2 overflow-hidden bg-app relative">
           {/* Grid Corner Cross Markers (+) */}
           <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 text-white/30 font-mono text-[11px] pointer-events-none">+</div>

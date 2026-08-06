@@ -27,12 +27,12 @@ export function FeaturesTriageSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="relative overflow-hidden border border-white/10"
+          className="relative overflow-hidden "
         >
           <img
             src="/landingasset1.png"
             alt="TokenGecko Prompt Health & Analytics Modules"
-            className="w-full h-auto object-cover rounded-2xl"
+            className="w-full h-auto object-cover rounded-2xl shadow-xl"
           />
         </motion.div>
       </div>

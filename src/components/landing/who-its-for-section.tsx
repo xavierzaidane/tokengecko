@@ -70,11 +70,10 @@ export function WhoItsForSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
             transition={{ duration: 0.6, delay: index * 0.1 }}
-            whileHover={{ y: -6, scale: 1.01 }}
             className={`p-8 flex flex-col justify-between min-h-[280px] space-y-6 transition-colors duration-300 ${
               card.isOrange
                 ? 'bg-accent-orange text-black shadow-xl'
-                : 'bg-card-dark text-white hover:bg-[#14171e]'
+                : 'bg-card-dark text-white'
             }`}
           >
             <div className="space-y-4">
@@ -91,7 +90,7 @@ export function WhoItsForSection() {
                 <span>{card.number}</span>
               </div>
               <h3
-                className={`text-xl font-bold tracking-tight ${
+                className={`text-xl font-normal tracking-tight ${
                   card.isOrange ? 'text-black' : 'text-white'
                 }`}
               >

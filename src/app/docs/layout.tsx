@@ -11,12 +11,12 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="relative min-h-screen overflow-x-clip bg-app text-white font-sans antialiased flex flex-col justify-between">
       {/* Fixed Container Edge Vertical Guide Lines matching Landing */}
-      <div className="hidden md:block pointer-events-none fixed inset-y-0 left-1/2 -translate-x-[calc(50%+40rem)] w-px bg-white/10 z-50" />
-      <div className="hidden md:block pointer-events-none fixed inset-y-0 left-1/2 translate-x-[calc(-50%+40rem)] w-px bg-white/10 z-50" />
+      <div className="hidden md:block pointer-events-none fixed inset-y-0 left-1/2 -translate-x-[calc(50%+40rem)] w-px bg-white/10 z-10" />
+      <div className="hidden md:block pointer-events-none fixed inset-y-0 left-1/2 translate-x-[calc(-50%+40rem)] w-px bg-white/10 z-10" />
 
       <div>
         {/* Top Landing Navbar */}
-        <header className="bg-app/90 backdrop-blur sticky top-0 z-40">
+        <header className="bg-app/90 ">
           <LandingNavbar />
         </header>
 
@@ -36,7 +36,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* Footer from Landing */}
-      <div className="mt-16 pt-8 border-t border-white/10 relative z-10">
+      <div className="mt-16 relative z-10">
         <LandingFooter />
       </div>
     </div>

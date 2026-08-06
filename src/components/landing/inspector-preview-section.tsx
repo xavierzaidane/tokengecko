@@ -13,7 +13,7 @@ export function InspectorPreviewSection() {
         className="w-full h-10 border-b border-white/10 relative z-10"
       />
 
-      <section id="inspector" className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24 relative z-10">
+      <section id="inspector" className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24 relative z-10 -top-2">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -38,6 +38,9 @@ export function InspectorPreviewSection() {
           />
         </motion.div>
       </section>
+
+      {/* Border line in the space below */}
+      <div className="w-full border-b border-white/10 relative z-10" />
     </>
   );
 }
